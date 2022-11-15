@@ -1,26 +1,16 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark">
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-203957082-2"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            
-            gtag('config', 'UA-203957082-2');
-            
-        </script>
-    <link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html" /><link rel="search" title="Search" href="../../../search.html" />
         <link rel="canonical" href="https://kornia.readthedocs.io/_modules/kornia/color/hls.html" />
 
-    <link rel="shortcut icon" href="../../../_static/kornia_logo_favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/>
+    <link rel="shortcut icon" href="../../../_static/kornia_logo_favicon.png"/><meta name="generator" content="sphinx-5.3.0, furo 2022.09.29"/>
         <title>kornia.color.hls - Kornia</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.59c74d8c95b765a7fd995ac71d459ebe.min.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/main.css" />
     
@@ -216,6 +206,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../models/hardnet.html">Hardnet (descriptor)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../models/affnet.html">Affnet (detection)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../models/sold2.html">SOLD2 (Line detection and matching)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../models/dexined.html">Dexined (edge detection)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API REFERENCE</span></p>
 <ul>
@@ -244,6 +235,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../geometry.depth.html">kornia.geometry.depth</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../geometry.epipolar.html">kornia.geometry.epipolar</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../geometry.homography.html">kornia.geometry.homography</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../geometry.liegroup.html">kornia.geometry.liegroup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../geometry.linalg.html">kornia.geometry.linalg</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../geometry.line.html">kornia.geometry.line</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../geometry.quaternion.html">kornia.geometry.quaternion</a></li>
@@ -257,6 +249,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../metrics.html">kornia.metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../morphology.html">kornia.morphology</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tracking.html">kornia.tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../testing.html">kornia.testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../utils.html">kornia.utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../x.html">kornia.x</a></li>
 </ul>
@@ -295,7 +288,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -317,7 +311,7 @@
 
 
 <div class="viewcode-block" id="rgb_to_hls"><a class="viewcode-back" href="../../../color.html#kornia.color.rgb_to_hls">[docs]</a><span class="k">def</span> <span class="nf">rgb_to_hls</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">"""Convert a RGB image to HLS.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert a RGB image to HLS.</span>
 
 <span class="sd">    .. image:: _static/img/rgb_to_hls.png</span>
 
@@ -335,18 +329,18 @@
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; input = torch.rand(2, 3, 4, 5)</span>
 <span class="sd">        &gt;&gt;&gt; output = rgb_to_hls(input)  # 2x3x4x5</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Input type is not a torch.Tensor. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input type is not a torch.Tensor. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Input size must have a shape of (*, 3, H, W). Got </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input size must have a shape of (*, 3, H, W). Got </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">is_scripting</span><span class="p">():</span>
         <span class="c1"># weird way to use globals compiling with JIT even in the code not used by JIT...</span>
         <span class="c1"># __setattr__ can be removed if pytorch version is &gt; 1.6.0 and then use:</span>
         <span class="c1"># rgb_to_hls.RGB2HSL_IDX = hls_to_rgb.RGB2HSL_IDX.to(image.device)</span>
-        <span class="n">rgb_to_hls</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">'RGB2HSL_IDX'</span><span class="p">,</span> <span class="n">rgb_to_hls</span><span class="o">.</span><span class="n">RGB2HSL_IDX</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+        <span class="n">rgb_to_hls</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">&#39;RGB2HSL_IDX&#39;</span><span class="p">,</span> <span class="n">rgb_to_hls</span><span class="o">.</span><span class="n">RGB2HSL_IDX</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
         <span class="n">_RGB2HSL_IDX</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">rgb_to_hls</span><span class="o">.</span><span class="n">RGB2HSL_IDX</span>  <span class="c1"># type: ignore</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">_RGB2HSL_IDX</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[[</span><span class="mf">0.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">1.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">2.0</span><span class="p">]]],</span> <span class="n">device</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># 3x1x1</span>
@@ -408,7 +402,7 @@
 
 
 <div class="viewcode-block" id="hls_to_rgb"><a class="viewcode-back" href="../../../color.html#kornia.color.hls_to_rgb">[docs]</a><span class="k">def</span> <span class="nf">hls_to_rgb</span><span class="p">(</span><span class="n">image</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">"""Convert a HLS image to RGB.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert a HLS image to RGB.</span>
 
 <span class="sd">    The image data is assumed to be in the range of (0, 1).</span>
 
@@ -421,18 +415,18 @@
 <span class="sd">    Example:</span>
 <span class="sd">        &gt;&gt;&gt; input = torch.rand(2, 3, 4, 5)</span>
 <span class="sd">        &gt;&gt;&gt; output = hls_to_rgb(input)  # 2x3x4x5</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Input type is not a torch.Tensor. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input type is not a torch.Tensor. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Input size must have a shape of (*, 3, H, W). Got </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input size must have a shape of (*, 3, H, W). Got </span><span class="si">{</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">is_scripting</span><span class="p">():</span>
         <span class="c1"># weird way to use globals compiling with JIT even in the code not used by JIT...</span>
         <span class="c1"># __setattr__ can be removed if pytorch version is &gt; 1.6.0 and then use:</span>
         <span class="c1"># hls_to_rgb.HLS2RGB = hls_to_rgb.HLS2RGB.to(image.device)</span>
-        <span class="n">hls_to_rgb</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">'HLS2RGB'</span><span class="p">,</span> <span class="n">hls_to_rgb</span><span class="o">.</span><span class="n">HLS2RGB</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+        <span class="n">hls_to_rgb</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">&#39;HLS2RGB&#39;</span><span class="p">,</span> <span class="n">hls_to_rgb</span><span class="o">.</span><span class="n">HLS2RGB</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">image</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
         <span class="n">_HLS2RGB</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">hls_to_rgb</span><span class="o">.</span><span class="n">HLS2RGB</span>  <span class="c1"># type: ignore</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">_HLS2RGB</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[[</span><span class="mf">0.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">8.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">4.0</span><span class="p">]]],</span> <span class="n">device</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># 3x1x1</span>
@@ -456,12 +450,12 @@
 
 <span class="c1"># tricks to speed up a little bit the conversions by presetting small tensors</span>
 <span class="c1"># (in the functions they are moved to the proper device)</span>
-<span class="n">hls_to_rgb</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">'HLS2RGB'</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[[</span><span class="mf">0.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">8.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">4.0</span><span class="p">]]]))</span>  <span class="c1"># 3x1x1</span>
-<span class="n">rgb_to_hls</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">'RGB2HSL_IDX'</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[[</span><span class="mf">0.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">1.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">2.0</span><span class="p">]]]))</span>  <span class="c1"># 3x1x1</span>
+<span class="n">hls_to_rgb</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">&#39;HLS2RGB&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[[</span><span class="mf">0.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">8.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">4.0</span><span class="p">]]]))</span>  <span class="c1"># 3x1x1</span>
+<span class="n">rgb_to_hls</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="s1">&#39;RGB2HSL_IDX&#39;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[[</span><span class="mf">0.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">1.0</span><span class="p">]],</span> <span class="p">[[</span><span class="mf">2.0</span><span class="p">]]]))</span>  <span class="c1"># 3x1x1</span>
 
 
 <div class="viewcode-block" id="RgbToHls"><a class="viewcode-back" href="../../../color.html#kornia.color.RgbToHls">[docs]</a><span class="k">class</span> <span class="nc">RgbToHls</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">"""Convert an image from RGB to HLS.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert an image from RGB to HLS.</span>
 
 <span class="sd">    The image data is assumed to be in the range of (0, 1).</span>
 
@@ -476,14 +470,14 @@
 <span class="sd">        &gt;&gt;&gt; input = torch.rand(2, 3, 4, 5)</span>
 <span class="sd">        &gt;&gt;&gt; hls = RgbToHls()</span>
 <span class="sd">        &gt;&gt;&gt; output = hls(input)  # 2x3x4x5</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">rgb_to_hls</span><span class="p">(</span><span class="n">image</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="HlsToRgb"><a class="viewcode-back" href="../../../color.html#kornia.color.HlsToRgb">[docs]</a><span class="k">class</span> <span class="nc">HlsToRgb</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">"""Convert an image from HLS to RGB.</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert an image from HLS to RGB.</span>
 
 <span class="sd">    The image data is assumed to be in the range of (0, 1).</span>
 
@@ -501,7 +495,7 @@
 <span class="sd">        &gt;&gt;&gt; input = torch.rand(2, 3, 4, 5)</span>
 <span class="sd">        &gt;&gt;&gt; rgb = HlsToRgb()</span>
 <span class="sd">        &gt;&gt;&gt; output = rgb(input)  # 2x3x4x5</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">hls_to_rgb</span><span class="p">(</span><span class="n">image</span><span class="p">)</span></div>
@@ -543,7 +537,9 @@
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
     <script src="../../../_static/jquery.js"></script>
     <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/scripts/furo.js"></script>
     <script src="../../../_static/clipboard.min.js"></script>
     <script src="../../../_static/copybutton.js"></script>
@@ -552,6 +548,7 @@
     
     <!-- DocsQA integration start -->
     <script src="https://jina-docqa-ui.netlify.app/dist/qabot.js"></script>
+    <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/3.3.1/gradio.js"></script>
     <script>
       // This prevents the global search interfere with qa-bot internal text input.
       document.addEventListener('DOMContentLoaded', () => {

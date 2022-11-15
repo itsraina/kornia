@@ -1,25 +1,15 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark">
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-203957082-2"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            
-            gtag('config', 'UA-203957082-2');
-            
-        </script>
-    <link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" />
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="#" /><link rel="search" title="Search" href="search.html" />
         <link rel="canonical" href="https://kornia.readthedocs.io/genindex.html" />
 
-    <link rel="shortcut icon" href="_static/kornia_logo_favicon.png"/><meta name="generator" content="sphinx-4.5.0, furo 2022.04.07"/><title>Index - Kornia</title>
+    <link rel="shortcut icon" href="_static/kornia_logo_favicon.png"/><meta name="generator" content="sphinx-5.3.0, furo 2022.09.29"/><title>Index - Kornia</title>
 <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=68f4518137b9aefe99b631505a2064c3c42c9852" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=d81277517bee4d6b0349d71bb2661d4890b5617c" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/design-style.59c74d8c95b765a7fd995ac71d459ebe.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     <link rel="stylesheet" type="text/css" href="_static/css/main.css" />
     
@@ -215,6 +205,7 @@
 <li class="toctree-l1"><a class="reference internal" href="models/hardnet.html">Hardnet (descriptor)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models/affnet.html">Affnet (detection)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="models/sold2.html">SOLD2 (Line detection and matching)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="models/dexined.html">Dexined (edge detection)</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API REFERENCE</span></p>
 <ul>
@@ -243,6 +234,7 @@
 <li class="toctree-l2"><a class="reference internal" href="geometry.depth.html">kornia.geometry.depth</a></li>
 <li class="toctree-l2"><a class="reference internal" href="geometry.epipolar.html">kornia.geometry.epipolar</a></li>
 <li class="toctree-l2"><a class="reference internal" href="geometry.homography.html">kornia.geometry.homography</a></li>
+<li class="toctree-l2"><a class="reference internal" href="geometry.liegroup.html">kornia.geometry.liegroup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="geometry.linalg.html">kornia.geometry.linalg</a></li>
 <li class="toctree-l2"><a class="reference internal" href="geometry.line.html">kornia.geometry.line</a></li>
 <li class="toctree-l2"><a class="reference internal" href="geometry.quaternion.html">kornia.geometry.quaternion</a></li>
@@ -256,6 +248,7 @@
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">kornia.metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="morphology.html">kornia.morphology</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tracking.html">kornia.tracking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">kornia.testing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">kornia.utils</a></li>
 <li class="toctree-l1"><a class="reference internal" href="x.html">kornia.x</a></li>
 </ul>
@@ -294,7 +287,8 @@
           </svg>
           <span>Back to top</span>
         </a>
-        <div class="content-icon-container"><div class="theme-toggle-container theme-toggle-content">
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -322,17 +316,41 @@
         <li><a href="geometry.camera.stereo.html#kornia.geometry.camera.stereo.StereoCamera.__init__">__init__() (kornia.geometry.camera.stereo.StereoCamera method)</a>
 
         <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.__init__">(kornia.geometry.liegroup.Se3 method)</a>
+</li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.__init__">(kornia.geometry.liegroup.So2 method)</a>
+</li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.__init__">(kornia.geometry.liegroup.So3 method)</a>
+</li>
           <li><a href="geometry.line.html#kornia.geometry.line.ParametrizedLine.__init__">(kornia.geometry.line.ParametrizedLine method)</a>
 </li>
           <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.__init__">(kornia.geometry.quaternion.Quaternion method)</a>
+</li>
+        </ul></li>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.__mul__">__mul__() (kornia.geometry.liegroup.Se3 method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.__mul__">(kornia.geometry.liegroup.So2 method)</a>
+</li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.__mul__">(kornia.geometry.liegroup.So3 method)</a>
 </li>
         </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.__neg__">__neg__() (kornia.geometry.quaternion.Quaternion method)</a>
 </li>
-        <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.__repr__">__repr__() (kornia.geometry.quaternion.Quaternion method)</a>
+        <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.__pow__">__pow__() (kornia.geometry.quaternion.Quaternion method)</a>
 </li>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.__repr__">__repr__() (kornia.geometry.liegroup.Se3 method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.__repr__">(kornia.geometry.liegroup.So2 method)</a>
+</li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.__repr__">(kornia.geometry.liegroup.So3 method)</a>
+</li>
+          <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.__repr__">(kornia.geometry.quaternion.Quaternion method)</a>
+</li>
+        </ul></li>
         <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.__sub__">__sub__() (kornia.geometry.quaternion.Quaternion method)</a>
 </li>
     </ul></td>
@@ -421,6 +439,8 @@
           <li><a href="geometry.camera.stereo.html#kornia.geometry.camera.stereo.StereoCamera.batch_size">(kornia.geometry.camera.stereo.StereoCamera property)</a>
 </li>
         </ul></li>
+        <li><a href="geometry.linalg.html#kornia.geometry.linalg.batched_dot_product">batched_dot_product() (in module kornia.geometry.linalg)</a>
+</li>
         <li><a href="utils.html#kornia.utils.batched_forward">batched_forward() (in module kornia.utils)</a>
 </li>
         <li><a href="geometry.bbox.html#kornia.geometry.bbox.bbox_generator">bbox_generator() (in module kornia.geometry.bbox)</a>
@@ -472,6 +492,8 @@
         <li><a href="geometry.boxes.html#kornia.geometry.boxes.Boxes">Boxes (class in kornia.geometry.boxes)</a>
 </li>
         <li><a href="geometry.boxes.html#kornia.geometry.boxes.Boxes3D">Boxes3D (class in kornia.geometry.boxes)</a>
+</li>
+        <li><a href="geometry.transform.html#kornia.geometry.transform.build_laplacian_pyramid">build_laplacian_pyramid() (in module kornia.geometry.transform)</a>
 </li>
         <li><a href="geometry.transform.html#kornia.geometry.transform.build_pyramid">build_pyramid() (in module kornia.geometry.transform)</a>
 </li>
@@ -533,10 +555,10 @@
 </li>
         <li><a href="geometry.epipolar.html#kornia.geometry.epipolar.compute_correspond_epilines">compute_correspond_epilines() (in module kornia.geometry.epipolar)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="contrib.html#kornia.contrib.compute_padding">compute_padding() (in module kornia.contrib)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="augmentation.base.html#kornia.augmentation.AugmentationBase2D.compute_transformation">compute_transformation() (kornia.augmentation.AugmentationBase2D method)</a>
 
         <ul>
@@ -569,6 +591,8 @@
 </li>
         <li><a href="feature.html#kornia.feature.CornerHarris">CornerHarris (class in kornia.feature)</a>
 </li>
+        <li><a href="testing.html#kornia.testing.create_eye_batch">create_eye_batch() (in module kornia.testing)</a>
+</li>
         <li><a href="utils.html#kornia.utils.create_meshgrid">create_meshgrid() (in module kornia.utils)</a>
 </li>
         <li><a href="utils.html#kornia.utils.create_meshgrid3d">create_meshgrid3d() (in module kornia.utils)</a>
@@ -576,6 +600,8 @@
         <li><a href="geometry.transform.html#kornia.geometry.transform.crop_and_resize">crop_and_resize() (in module kornia.geometry.transform)</a>
 </li>
         <li><a href="geometry.transform.html#kornia.geometry.transform.crop_by_boxes">crop_by_boxes() (in module kornia.geometry.transform)</a>
+</li>
+        <li><a href="geometry.transform.html#kornia.geometry.transform.crop_by_indices">crop_by_indices() (in module kornia.geometry.transform)</a>
 </li>
         <li><a href="geometry.epipolar.html#kornia.geometry.epipolar.cross_product_matrix">cross_product_matrix() (in module kornia.geometry.epipolar)</a>
 </li>
@@ -623,6 +649,8 @@
 </li>
         <li><a href="geometry.conversions.html#kornia.geometry.conversions.denormalize_pixel_coordinates3d">denormalize_pixel_coordinates3d() (in module kornia.geometry.conversions)</a>
 </li>
+        <li><a href="geometry.conversions.html#kornia.geometry.conversions.denormalize_points_with_intrinsics">denormalize_points_with_intrinsics() (in module kornia.geometry.conversions)</a>
+</li>
         <li><a href="feature.html#kornia.feature.DenseSIFTDescriptor">DenseSIFTDescriptor (class in kornia.feature)</a>
 </li>
         <li><a href="geometry.depth.html#kornia.geometry.depth.depth_to_3d">depth_to_3d() (in module kornia.geometry.depth)</a>
@@ -639,6 +667,10 @@
         </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="geometry.camera.pinhole.html#kornia.geometry.camera.pinhole.PinholeCamera.device">device() (kornia.geometry.camera.pinhole.PinholeCamera method)</a>
+</li>
+        <li><a href="filters.html#kornia.filters.DexiNed">DexiNed (class in kornia.filters)</a>
+</li>
         <li><a href="contrib.html#kornia.contrib.diamond_square">diamond_square() (in module kornia.contrib)</a>
 </li>
         <li><a href="losses.html#kornia.losses.dice_loss">dice_loss() (in module kornia.losses)</a>
@@ -683,6 +715,8 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="x.html#kornia.x.EarlyStopping">EarlyStopping (class in kornia.x)</a>
 </li>
+        <li><a href="contrib.html#kornia.contrib.EdgeDetector">EdgeDetector (class in kornia.contrib)</a>
+</li>
         <li><a href="geometry.transform.html#kornia.geometry.transform.elastic_transform2d">elastic_transform2d() (in module kornia.geometry.transform)</a>
 </li>
         <li><a href="feature.html#kornia.feature.ellipse_to_laf">ellipse_to_laf() (in module kornia.feature)</a>
@@ -697,10 +731,20 @@
 </li>
         <li><a href="geometry.epipolar.html#kornia.geometry.epipolar.essential_from_fundamental">essential_from_fundamental() (in module kornia.geometry.epipolar)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="geometry.epipolar.html#kornia.geometry.epipolar.essential_from_Rt">essential_from_Rt() (in module kornia.geometry.epipolar)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="geometry.linalg.html#kornia.geometry.linalg.euclidean_distance">euclidean_distance() (in module kornia.geometry.linalg)</a>
+</li>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.exp">exp() (kornia.geometry.liegroup.Se3 static method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.exp">(kornia.geometry.liegroup.So2 static method)</a>
+</li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.exp">(kornia.geometry.liegroup.So3 static method)</a>
+</li>
+        </ul></li>
         <li><a href="feature.html#kornia.feature.extract_patches_from_pyramid">extract_patches_from_pyramid() (in module kornia.feature)</a>
 </li>
         <li><a href="feature.html#kornia.feature.extract_patches_simple">extract_patches_simple() (in module kornia.feature)</a>
@@ -759,6 +803,10 @@
 
         <ul>
           <li><a href="augmentation.container.html#kornia.augmentation.container.ImageSequential.forward">(kornia.augmentation.container.ImageSequential method)</a>
+</li>
+          <li><a href="augmentation.container.html#kornia.augmentation.container.ManyToManyAugmentationDispather.forward">(kornia.augmentation.container.ManyToManyAugmentationDispather method)</a>
+</li>
+          <li><a href="augmentation.container.html#kornia.augmentation.container.ManyToOneAugmentationDispather.forward">(kornia.augmentation.container.ManyToOneAugmentationDispather method)</a>
 </li>
           <li><a href="augmentation.container.html#kornia.augmentation.container.PatchSequential.forward">(kornia.augmentation.container.PatchSequential method)</a>
 </li>
@@ -827,10 +875,18 @@
           <li><a href="geometry.transform.html#kornia.geometry.transform.image_registrator.Similarity.forward_inverse">(kornia.geometry.transform.image_registrator.Similarity method)</a>
 </li>
         </ul></li>
+        <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.from_axis_angle">from_axis_angle() (kornia.geometry.quaternion.Quaternion class method)</a>
+</li>
         <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.from_coeffs">from_coeffs() (kornia.geometry.quaternion.Quaternion class method)</a>
 </li>
-        <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.from_matrix">from_matrix() (kornia.geometry.quaternion.Quaternion class method)</a>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.from_matrix">from_matrix() (kornia.geometry.liegroup.So2 class method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.from_matrix">(kornia.geometry.liegroup.So3 class method)</a>
 </li>
+          <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.from_matrix">(kornia.geometry.quaternion.Quaternion class method)</a>
+</li>
+        </ul></li>
         <li><a href="geometry.boxes.html#kornia.geometry.boxes.Boxes.from_tensor">from_tensor() (kornia.geometry.boxes.Boxes class method)</a>
 
         <ul>
@@ -885,6 +941,8 @@
           <li><a href="geometry.boxes.html#kornia.geometry.boxes.Boxes3D.get_boxes_shape">(kornia.geometry.boxes.Boxes3D method)</a>
 </li>
         </ul></li>
+        <li><a href="geometry.epipolar.html#kornia.geometry.epipolar.get_closest_point_on_epipolar_line">get_closest_point_on_epipolar_line() (in module kornia.geometry.epipolar)</a>
+</li>
         <li><a href="utils.html#kornia.utils.get_cuda_device_if_available">get_cuda_device_if_available() (in module kornia.utils)</a>
 </li>
         <li><a href="filters.html#kornia.filters.get_gaussian_discrete_kernel1d">get_gaussian_discrete_kernel1d() (in module kornia.filters)</a>
@@ -916,6 +974,8 @@
         <li><a href="filters.html#kornia.filters.get_laplacian_kernel2d">get_laplacian_kernel2d() (in module kornia.filters)</a>
 </li>
         <li><a href="filters.html#kornia.filters.get_motion_kernel2d">get_motion_kernel2d() (in module kornia.filters)</a>
+</li>
+        <li><a href="geometry.epipolar.html#kornia.geometry.epipolar.get_perpendicular">get_perpendicular() (in module kornia.geometry.epipolar)</a>
 </li>
         <li><a href="geometry.transform.html#kornia.geometry.transform.get_perspective_transform">get_perspective_transform() (in module kornia.geometry.transform)</a>
 </li>
@@ -963,6 +1023,14 @@
 </li>
         <li><a href="feature.html#kornia.feature.harris_response">harris_response() (in module kornia.feature)</a>
 </li>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.hat">hat() (kornia.geometry.liegroup.Se3 static method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.hat">(kornia.geometry.liegroup.So2 static method)</a>
+</li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.hat">(kornia.geometry.liegroup.So3 static method)</a>
+</li>
+        </ul></li>
         <li><a href="losses.html#kornia.losses.HausdorffERLoss">HausdorffERLoss (class in kornia.losses)</a>
 </li>
         <li><a href="losses.html#kornia.losses.HausdorffERLoss3D">HausdorffERLoss3D (class in kornia.losses)</a>
@@ -973,12 +1041,12 @@
 </li>
         <li><a href="geometry.transform.html#kornia.geometry.transform.Hflip">Hflip (class in kornia.geometry.transform)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="geometry.transform.html#kornia.geometry.transform.hflip">hflip() (in module kornia.geometry.transform)</a>
 </li>
         <li><a href="enhance.html#kornia.enhance.histogram">histogram() (in module kornia.enhance)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="enhance.html#kornia.enhance.histogram2d">histogram2d() (in module kornia.enhance)</a>
 </li>
         <li><a href="color.html#kornia.color.hls_to_rgb">hls_to_rgb() (in module kornia.color)</a>
@@ -1007,8 +1075,16 @@
   <h2>I</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.identity">identity() (kornia.geometry.quaternion.Quaternion class method)</a>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.identity">identity() (kornia.geometry.liegroup.Se3 class method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.identity">(kornia.geometry.liegroup.So2 class method)</a>
 </li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.identity">(kornia.geometry.liegroup.So3 class method)</a>
+</li>
+          <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.identity">(kornia.geometry.quaternion.Quaternion class method)</a>
+</li>
+        </ul></li>
         <li><a href="enhance.html#kornia.enhance.image_histogram2d">image_histogram2d() (in module kornia.enhance)</a>
 </li>
         <li><a href="utils.html#kornia.utils.image_list_to_tensor">image_list_to_tensor() (in module kornia.utils)</a>
@@ -1031,6 +1107,8 @@
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="geometry.line.html#kornia.geometry.line.ParametrizedLine.intersect">intersect() (kornia.geometry.line.ParametrizedLine method)</a>
+</li>
         <li><a href="geometry.camera.pinhole.html#kornia.geometry.camera.pinhole.PinholeCamera.intrinsics">intrinsics (kornia.geometry.camera.pinhole.PinholeCamera property)</a>
 </li>
         <li><a href="geometry.camera.pinhole.html#kornia.geometry.camera.pinhole.PinholeCamera.intrinsics_inverse">intrinsics_inverse() (kornia.geometry.camera.pinhole.PinholeCamera method)</a>
@@ -1038,7 +1116,15 @@
         <li><a href="geometry.epipolar.html#kornia.geometry.epipolar.intrinsics_like">intrinsics_like() (in module kornia.geometry.epipolar)</a>
 </li>
         <li><a href="augmentation.container.html#kornia.augmentation.container.AugmentationSequential.inverse">inverse() (kornia.augmentation.container.AugmentationSequential method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.inverse">(kornia.geometry.liegroup.Se3 method)</a>
 </li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.inverse">(kornia.geometry.liegroup.So2 method)</a>
+</li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.inverse">(kornia.geometry.liegroup.So3 method)</a>
+</li>
+        </ul></li>
         <li><a href="losses.html#kornia.losses.inverse_depth_smoothness_loss">inverse_depth_smoothness_loss() (in module kornia.losses)</a>
 </li>
         <li><a href="enhance.html#kornia.enhance.ZCAWhitening.inverse_transform">inverse_transform() (kornia.enhance.ZCAWhitening method)</a>
@@ -1088,8 +1174,6 @@
           <li><a href="geometry.bbox.html#module-kornia.geometry.bbox">module</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     kornia.geometry.boxes
 
@@ -1111,7 +1195,40 @@
           <li><a href="geometry.transform.html#module-kornia.geometry.transform.image_registrator">module</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    kornia.testing
+
+        <ul>
+          <li><a href="testing.html#module-kornia.testing">module</a>
+</li>
+        </ul></li>
+        <li><a href="testing.html#kornia.testing.KORNIA_CHECK">KORNIA_CHECK() (in module kornia.testing)</a>
+</li>
+        <li><a href="testing.html#kornia.testing.KORNIA_CHECK_DM_DESC">KORNIA_CHECK_DM_DESC() (in module kornia.testing)</a>
+</li>
+        <li><a href="testing.html#kornia.testing.KORNIA_CHECK_IS_COLOR">KORNIA_CHECK_IS_COLOR() (in module kornia.testing)</a>
+</li>
+        <li><a href="testing.html#kornia.testing.KORNIA_CHECK_IS_GRAY">KORNIA_CHECK_IS_GRAY() (in module kornia.testing)</a>
+</li>
+        <li><a href="testing.html#kornia.testing.KORNIA_CHECK_IS_TENSOR">KORNIA_CHECK_IS_TENSOR() (in module kornia.testing)</a>
+</li>
         <li><a href="feature.html#kornia.feature.KORNIA_CHECK_LAF">KORNIA_CHECK_LAF() (in module kornia.feature)</a>
+
+        <ul>
+          <li><a href="testing.html#kornia.testing.KORNIA_CHECK_LAF">(in module kornia.testing)</a>
+</li>
+        </ul></li>
+        <li><a href="testing.html#kornia.testing.KORNIA_CHECK_SAME_DEVICE">KORNIA_CHECK_SAME_DEVICE() (in module kornia.testing)</a>
+</li>
+        <li><a href="testing.html#kornia.testing.KORNIA_CHECK_SAME_DEVICES">KORNIA_CHECK_SAME_DEVICES() (in module kornia.testing)</a>
+</li>
+        <li><a href="testing.html#kornia.testing.KORNIA_CHECK_SHAPE">KORNIA_CHECK_SHAPE() (in module kornia.testing)</a>
+</li>
+        <li><a href="testing.html#kornia.testing.KORNIA_CHECK_TYPE">KORNIA_CHECK_TYPE() (in module kornia.testing)</a>
+</li>
+        <li><a href="testing.html#kornia.testing.KORNIA_UNWRAP">KORNIA_UNWRAP() (in module kornia.testing)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -1151,12 +1268,12 @@
 </li>
         <li><a href="geometry.epipolar.html#kornia.geometry.epipolar.left_to_right_epipolar_distance">left_to_right_epipolar_distance() (in module kornia.geometry.epipolar)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="geometry.homography.html#kornia.geometry.homography.line_segment_transfer_error_one_way">line_segment_transfer_error_one_way() (in module kornia.geometry.homography)</a>
 </li>
         <li><a href="color.html#kornia.color.linear_rgb_to_rgb">linear_rgb_to_rgb() (in module kornia.color)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="enhance.html#kornia.enhance.linear_transform">linear_transform() (in module kornia.enhance)</a>
 </li>
         <li><a href="color.html#kornia.color.LinearRgbToRgb">LinearRgbToRgb (class in kornia.color)</a>
@@ -1171,6 +1288,14 @@
 </li>
         <li><a href="feature.html#kornia.feature.LoFTR">LoFTR (class in kornia.feature)</a>
 </li>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.log">log() (kornia.geometry.liegroup.Se3 method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.log">(kornia.geometry.liegroup.So2 method)</a>
+</li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.log">(kornia.geometry.liegroup.So3 method)</a>
+</li>
+        </ul></li>
         <li><a href="augmentation.module.html#kornia.augmentation.LongestMaxSize">LongestMaxSize (class in kornia.augmentation)</a>
 </li>
         <li><a href="losses.html#kornia.losses.lovasz_hinge_loss">lovasz_hinge_loss() (in module kornia.losses)</a>
@@ -1195,6 +1320,10 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="feature.html#kornia.feature.make_upright">make_upright() (in module kornia.feature)</a>
 </li>
+        <li><a href="augmentation.container.html#kornia.augmentation.container.ManyToManyAugmentationDispather">ManyToManyAugmentationDispather (class in kornia.augmentation.container)</a>
+</li>
+        <li><a href="augmentation.container.html#kornia.augmentation.container.ManyToOneAugmentationDispather">ManyToOneAugmentationDispather (class in kornia.augmentation.container)</a>
+</li>
         <li><a href="feature.html#kornia.feature.match_adalam">match_adalam() (in module kornia.feature)</a>
 </li>
         <li><a href="feature.html#kornia.feature.match_fginn">match_fginn() (in module kornia.feature)</a>
@@ -1209,8 +1338,16 @@
 </li>
         <li><a href="feature.html#kornia.feature.match_snn">match_snn() (in module kornia.feature)</a>
 </li>
-        <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.matrix">matrix() (kornia.geometry.quaternion.Quaternion method)</a>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.matrix">matrix() (kornia.geometry.liegroup.Se3 method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.matrix">(kornia.geometry.liegroup.So2 method)</a>
 </li>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.matrix">(kornia.geometry.liegroup.So3 method)</a>
+</li>
+          <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.matrix">(kornia.geometry.quaternion.Quaternion method)</a>
+</li>
+        </ul></li>
         <li><a href="geometry.conversions.html#kornia.geometry.conversions.matrix4x4_to_Rt">matrix4x4_to_Rt() (in module kornia.geometry.conversions)</a>
 </li>
         <li><a href="filters.html#kornia.filters.max_blur_pool2d">max_blur_pool2d() (in module kornia.filters)</a>
@@ -1221,12 +1358,12 @@
 </li>
         <li><a href="metrics.html#kornia.metrics.mean_iou">mean_iou() (in module kornia.metrics)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="metrics.html#kornia.metrics.mean_iou_bbox">mean_iou_bbox() (in module kornia.metrics)</a>
 </li>
         <li><a href="filters.html#kornia.filters.median_blur">median_blur() (in module kornia.filters)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="filters.html#kornia.filters.MedianBlur">MedianBlur (class in kornia.filters)</a>
 </li>
         <li><a href="geometry.boxes.html#kornia.geometry.boxes.Boxes.merge">merge() (kornia.geometry.boxes.Boxes method)</a>
@@ -1248,6 +1385,8 @@
           <li><a href="geometry.homography.html#module-kornia.geometry.homography">kornia.geometry.homography</a>
 </li>
           <li><a href="geometry.transform.html#module-kornia.geometry.transform.image_registrator">kornia.geometry.transform.image_registrator</a>
+</li>
+          <li><a href="testing.html#module-kornia.testing">kornia.testing</a>
 </li>
         </ul></li>
         <li><a href="filters.html#kornia.filters.motion_blur">motion_blur() (in module kornia.filters)</a>
@@ -1305,6 +1444,8 @@
         <li><a href="geometry.conversions.html#kornia.geometry.conversions.normalize_pixel_coordinates3d">normalize_pixel_coordinates3d() (in module kornia.geometry.conversions)</a>
 </li>
         <li><a href="geometry.epipolar.html#kornia.geometry.epipolar.normalize_points">normalize_points() (in module kornia.geometry.epipolar)</a>
+</li>
+        <li><a href="geometry.conversions.html#kornia.geometry.conversions.normalize_points_with_intrinsics">normalize_points_with_intrinsics() (in module kornia.geometry.conversions)</a>
 </li>
         <li><a href="geometry.conversions.html#kornia.geometry.conversions.normalize_quaternion">normalize_quaternion() (in module kornia.geometry.conversions)</a>
 </li>
@@ -1406,8 +1547,12 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="geometry.camera.stereo.html#kornia.geometry.camera.stereo.StereoCamera.Q">Q (kornia.geometry.camera.stereo.StereoCamera property)</a>
 </li>
-        <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.q">q (kornia.geometry.quaternion.Quaternion property)</a>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.q">q (kornia.geometry.liegroup.So3 property)</a>
+
+        <ul>
+          <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.q">(kornia.geometry.quaternion.Quaternion property)</a>
 </li>
+        </ul></li>
         <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion">Quaternion (class in kornia.geometry.quaternion)</a>
 </li>
     </ul></td>
@@ -1428,6 +1573,8 @@
   <h2>R</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.r">r (kornia.geometry.liegroup.Se3 property)</a>
+</li>
         <li><a href="geometry.conversions.html#kornia.geometry.conversions.rad2deg">rad2deg() (in module kornia.geometry.conversions)</a>
 </li>
         <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.random">random() (kornia.geometry.quaternion.Quaternion class method)</a>
@@ -1440,7 +1587,11 @@
 </li>
         <li><a href="augmentation.module.html#kornia.augmentation.RandomBoxBlur">RandomBoxBlur (class in kornia.augmentation)</a>
 </li>
+        <li><a href="augmentation.module.html#kornia.augmentation.RandomBrightness">RandomBrightness (class in kornia.augmentation)</a>
+</li>
         <li><a href="augmentation.module.html#kornia.augmentation.RandomChannelShuffle">RandomChannelShuffle (class in kornia.augmentation)</a>
+</li>
+        <li><a href="augmentation.module.html#kornia.augmentation.RandomContrast">RandomContrast (class in kornia.augmentation)</a>
 </li>
         <li><a href="augmentation.module.html#kornia.augmentation.RandomCrop">RandomCrop (class in kornia.augmentation)</a>
 </li>
@@ -1460,6 +1611,8 @@
 </li>
         <li><a href="augmentation.module.html#kornia.augmentation.RandomFisheye">RandomFisheye (class in kornia.augmentation)</a>
 </li>
+        <li><a href="augmentation.module.html#kornia.augmentation.RandomGamma">RandomGamma (class in kornia.augmentation)</a>
+</li>
         <li><a href="augmentation.module.html#kornia.augmentation.RandomGaussianBlur">RandomGaussianBlur (class in kornia.augmentation)</a>
 </li>
         <li><a href="augmentation.module.html#kornia.augmentation.RandomGaussianNoise">RandomGaussianNoise (class in kornia.augmentation)</a>
@@ -1469,6 +1622,8 @@
         <li><a href="augmentation.module.html#kornia.augmentation.RandomHorizontalFlip">RandomHorizontalFlip (class in kornia.augmentation)</a>
 </li>
         <li><a href="augmentation.module.html#kornia.augmentation.RandomHorizontalFlip3D">RandomHorizontalFlip3D (class in kornia.augmentation)</a>
+</li>
+        <li><a href="augmentation.module.html#kornia.augmentation.RandomHue">RandomHue (class in kornia.augmentation)</a>
 </li>
         <li><a href="augmentation.module.html#kornia.augmentation.RandomInvert">RandomInvert (class in kornia.augmentation)</a>
 </li>
@@ -1530,14 +1685,14 @@
 </li>
         <li><a href="geometry.subpix.html#kornia.geometry.subpix.render_gaussian2d">render_gaussian2d() (in module kornia.geometry.subpix)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="geometry.camera.stereo.html#kornia.geometry.camera.stereo.reproject_disparity_to_3D">reproject_disparity_to_3D() (in module kornia.geometry.camera.stereo)</a>
 
         <ul>
           <li><a href="geometry.camera.stereo.html#kornia.geometry.camera.stereo.StereoCamera.reproject_disparity_to_3D">(kornia.geometry.camera.stereo.StereoCamera method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="geometry.transform.html#kornia.geometry.transform.Rescale">Rescale (class in kornia.geometry.transform)</a>
 </li>
         <li><a href="geometry.transform.html#kornia.geometry.transform.rescale">rescale() (in module kornia.geometry.transform)</a>
@@ -1686,7 +1841,13 @@
 </li>
         <li><a href="contrib.html#kornia.contrib.FaceDetectorResult.score">score (kornia.contrib.FaceDetectorResult property)</a>
 </li>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3">Se3 (class in kornia.geometry.liegroup)</a>
+</li>
         <li><a href="x.html#kornia.x.SemanticSegmentationTrainer">SemanticSegmentationTrainer (class in kornia.x)</a>
+</li>
+        <li><a href="color.html#kornia.color.Sepia">Sepia (class in kornia.color)</a>
+</li>
+        <li><a href="color.html#kornia.color.sepia">sepia() (in module kornia.color)</a>
 </li>
         <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.shape">shape (kornia.geometry.quaternion.Quaternion property)</a>
 </li>
@@ -1702,12 +1863,20 @@
 </li>
         <li><a href="geometry.transform.html#kornia.geometry.transform.image_registrator.Similarity">Similarity (class in kornia.geometry.transform.image_registrator)</a>
 </li>
-        <li><a href="augmentation.module.html#kornia.augmentation.SmallestMaxSize">SmallestMaxSize (class in kornia.augmentation)</a>
+        <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.slerp">slerp() (kornia.geometry.quaternion.Quaternion method)</a>
 </li>
-        <li><a href="filters.html#kornia.filters.Sobel">Sobel (class in kornia.filters)</a>
+        <li><a href="augmentation.module.html#kornia.augmentation.SmallestMaxSize">SmallestMaxSize (class in kornia.augmentation)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2">So2 (class in kornia.geometry.liegroup)</a>
+</li>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3">So3 (class in kornia.geometry.liegroup)</a>
+</li>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.so3">so3 (kornia.geometry.liegroup.Se3 property)</a>
+</li>
+        <li><a href="filters.html#kornia.filters.Sobel">Sobel (class in kornia.filters)</a>
+</li>
         <li><a href="filters.html#kornia.filters.sobel">sobel() (in module kornia.filters)</a>
 </li>
         <li><a href="enhance.html#kornia.enhance.solarize">solarize() (in module kornia.enhance)</a>
@@ -1762,6 +1931,10 @@
   <h2>T</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.t">t (kornia.geometry.liegroup.Se3 property)</a>
+</li>
+        <li><a href="testing.html#kornia.testing.tensor_to_gradcheck_var">tensor_to_gradcheck_var() (in module kornia.testing)</a>
+</li>
         <li><a href="utils.html#kornia.utils.tensor_to_image">tensor_to_image() (in module kornia.utils)</a>
 </li>
         <li><a href="feature.html#kornia.feature.TFeat">TFeat (class in kornia.feature)</a>
@@ -1802,10 +1975,10 @@
 </li>
         <li><a href="losses.html#kornia.losses.TotalVariation">TotalVariation (class in kornia.losses)</a>
 </li>
-        <li><a href="tracking.html#kornia.tracking.HomographyTracker.track_next_frame">track_next_frame() (kornia.tracking.HomographyTracker method)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="tracking.html#kornia.tracking.HomographyTracker.track_next_frame">track_next_frame() (kornia.tracking.HomographyTracker method)</a>
+</li>
         <li><a href="x.html#kornia.x.Trainer">Trainer (class in kornia.x)</a>
 </li>
         <li><a href="geometry.bbox.html#kornia.geometry.bbox.transform_bbox">transform_bbox() (in module kornia.geometry.bbox)</a>
@@ -1890,6 +2063,12 @@
 </li>
         <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.vec">vec (kornia.geometry.quaternion.Quaternion property)</a>
 </li>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.Se3.vee">vee() (kornia.geometry.liegroup.Se3 static method)</a>
+
+        <ul>
+          <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So3.vee">(kornia.geometry.liegroup.So3 static method)</a>
+</li>
+        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="geometry.transform.html#kornia.geometry.transform.Vflip">Vflip (class in kornia.geometry.transform)</a>
@@ -1944,6 +2123,8 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.x">x (kornia.geometry.quaternion.Quaternion property)</a>
 </li>
+        <li><a href="testing.html#kornia.testing.xla_is_available">xla_is_available() (in module kornia.testing)</a>
+</li>
         <li><a href="contrib.html#kornia.contrib.FaceDetectorResult.xmax">xmax (kornia.contrib.FaceDetectorResult property)</a>
 </li>
     </ul></td>
@@ -1994,12 +2175,16 @@
   <h2>Z</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.z">z (kornia.geometry.quaternion.Quaternion property)</a>
+        <li><a href="geometry.liegroup.html#kornia.geometry.liegroup.So2.z">z (kornia.geometry.liegroup.So2 property)</a>
+
+        <ul>
+          <li><a href="geometry.quaternion.html#kornia.geometry.quaternion.Quaternion.z">(kornia.geometry.quaternion.Quaternion property)</a>
 </li>
-        <li><a href="enhance.html#kornia.enhance.zca_mean">zca_mean() (in module kornia.enhance)</a>
-</li>
+        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="enhance.html#kornia.enhance.zca_mean">zca_mean() (in module kornia.enhance)</a>
+</li>
         <li><a href="enhance.html#kornia.enhance.zca_whiten">zca_whiten() (in module kornia.enhance)</a>
 </li>
         <li><a href="enhance.html#kornia.enhance.ZCAWhitening">ZCAWhitening (class in kornia.enhance)</a>
@@ -2046,7 +2231,9 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/scripts/furo.js"></script>
     <script src="_static/clipboard.min.js"></script>
     <script src="_static/copybutton.js"></script>
@@ -2055,6 +2242,7 @@
     
     <!-- DocsQA integration start -->
     <script src="https://jina-docqa-ui.netlify.app/dist/qabot.js"></script>
+    <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/3.3.1/gradio.js"></script>
     <script>
       // This prevents the global search interfere with qa-bot internal text input.
       document.addEventListener('DOMContentLoaded', () => {
