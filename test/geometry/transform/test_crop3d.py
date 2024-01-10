@@ -5,6 +5,7 @@ from torch.autograd import gradcheck
 import kornia
 import kornia.testing as utils  # test utils
 from kornia.testing import assert_close
+from kornia.utils._compat import torch_version
 
 
 class TestCropAndResize3D:
@@ -69,12 +70,14 @@ class TestCropAndResize3D:
         )  # 1x8x3
         boxes = utils.tensor_to_gradcheck_var(boxes, requires_grad=False)  # to var
 
-        assert gradcheck(kornia.geometry.transform.crop_and_resize3d, (img, boxes, (4, 3, 2)), raise_exception=True)
+        assert gradcheck(
+            kornia.geometry.transform.crop_and_resize3d, (img, boxes, (4, 3, 2)), raise_exception=True, fast_mode=True
+        )
 
-    def test_jit(self, device, dtype):
+    def test_dynamo(self, device, dtype, torch_optimizer):
         # Define script
         op = kornia.geometry.transform.crop_and_resize3d
-        op_script = torch.jit.script(op)
+        op_script = torch_optimizer(op)
 
         img = torch.arange(0.0, 64.0, device=device, dtype=dtype).view(1, 1, 4, 4, 4)
 
@@ -125,12 +128,21 @@ class TestCenterCrop3D:
         img = torch.arange(0.0, 343.0, device=device, dtype=dtype).view(1, 1, 7, 7, 7)
         img = utils.tensor_to_gradcheck_var(img)  # to var
 
-        assert gradcheck(kornia.geometry.transform.center_crop3d, (img, (3, 5, 7)), raise_exception=True)
+        assert gradcheck(
+            kornia.geometry.transform.center_crop3d, (img, (3, 5, 7)), raise_exception=True, fast_mode=True
+        )
 
-    def test_jit(self, device, dtype):
+    @pytest.mark.skipif(
+        torch_version() == "2.1.0",
+        reason=(
+            "https://github.com/pytorch/pytorch/issues/110680"
+            " -  unsupported operand type(s) for @: 'FakeTensor' and 'FakeTensor' on `normalize_homography3d`"
+        ),
+    )
+    def test_dynamo(self, device, dtype, torch_optimizer):
         # Define script
         op = kornia.geometry.transform.center_crop3d
-        op_script = torch.jit.script(op)
+        op_script = torch_optimizer(op)
         img = torch.ones(4, 3, 5, 6, 7, device=device, dtype=dtype)
 
         actual = op_script(img, (4, 3, 2))
@@ -223,10 +235,10 @@ class TestCropByBoxes3D:
         patches = kornia.geometry.transform.crop_by_boxes3d(inp, src_box, dst_box, align_corners=True)
         assert_close(patches, expected, rtol=1e-4, atol=1e-4)
 
-    def test_jit(self, device, dtype):
+    def test_dynamo(self, device, dtype, torch_optimizer):
         # Define script
         op = kornia.geometry.transform.crop_by_boxes3d
-        op_script = torch.jit.script(op)
+        op_script = torch_optimizer(op)
         # Define input
         inp = torch.randn((1, 1, 7, 7, 7), device=device, dtype=dtype)
         src_box = torch.tensor(
@@ -303,4 +315,6 @@ class TestCropByBoxes3D:
 
         inp = utils.tensor_to_gradcheck_var(inp, requires_grad=True)  # to var
 
-        assert gradcheck(kornia.geometry.transform.crop_by_boxes3d, (inp, src_box, dst_box), raise_exception=True)
+        assert gradcheck(
+            kornia.geometry.transform.crop_by_boxes3d, (inp, src_box, dst_box), raise_exception=True, fast_mode=True
+        )

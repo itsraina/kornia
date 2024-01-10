@@ -16,28 +16,28 @@ from kornia.utils.helpers import (
 @pytest.mark.parametrize(
     "tensor_list,out_device,out_dtype,will_throw_error",
     [
-        ([], torch.device('cpu'), torch.get_default_dtype(), False),
-        ([None, None], torch.device('cpu'), torch.get_default_dtype(), False),
-        ([torch.tensor(0, device='cpu', dtype=torch.float16), None], torch.device('cpu'), torch.float16, False),
-        ([torch.tensor(0, device='cpu', dtype=torch.float32), None], torch.device('cpu'), torch.float32, False),
-        ([torch.tensor(0, device='cpu', dtype=torch.float64), None], torch.device('cpu'), torch.float64, False),
-        ([torch.tensor(0, device='cpu', dtype=torch.float16)] * 2, torch.device('cpu'), torch.float16, False),
-        ([torch.tensor(0, device='cpu', dtype=torch.float32)] * 2, torch.device('cpu'), torch.float32, False),
-        ([torch.tensor(0, device='cpu', dtype=torch.float64)] * 2, torch.device('cpu'), torch.float64, False),
+        ([], torch.device("cpu"), torch.get_default_dtype(), False),
+        ([None, None], torch.device("cpu"), torch.get_default_dtype(), False),
+        ([torch.tensor(0, device="cpu", dtype=torch.float16), None], torch.device("cpu"), torch.float16, False),
+        ([torch.tensor(0, device="cpu", dtype=torch.float32), None], torch.device("cpu"), torch.float32, False),
+        ([torch.tensor(0, device="cpu", dtype=torch.float64), None], torch.device("cpu"), torch.float64, False),
+        ([torch.tensor(0, device="cpu", dtype=torch.float16)] * 2, torch.device("cpu"), torch.float16, False),
+        ([torch.tensor(0, device="cpu", dtype=torch.float32)] * 2, torch.device("cpu"), torch.float32, False),
+        ([torch.tensor(0, device="cpu", dtype=torch.float64)] * 2, torch.device("cpu"), torch.float64, False),
         (
-            [torch.tensor(0, device='cpu', dtype=torch.float16), torch.tensor(0, device='cpu', dtype=torch.float64)],
+            [torch.tensor(0, device="cpu", dtype=torch.float16), torch.tensor(0, device="cpu", dtype=torch.float64)],
             None,
             None,
             True,
         ),
         (
-            [torch.tensor(0, device='cpu', dtype=torch.float32), torch.tensor(0, device='cpu', dtype=torch.float64)],
+            [torch.tensor(0, device="cpu", dtype=torch.float32), torch.tensor(0, device="cpu", dtype=torch.float64)],
             None,
             None,
             True,
         ),
         (
-            [torch.tensor(0, device='cpu', dtype=torch.float16), torch.tensor(0, device='cpu', dtype=torch.float32)],
+            [torch.tensor(0, device="cpu", dtype=torch.float16), torch.tensor(0, device="cpu", dtype=torch.float32)],
             None,
             None,
             True,
@@ -104,18 +104,19 @@ class TestSvdCast:
 
 class TestSolveCast:
     def test_smoke(self, device, dtype):
+        torch.manual_seed(0)
         A = torch.randn(2, 3, 1, 4, 4, device=device, dtype=dtype)
         B = torch.randn(2, 3, 1, 4, 6, device=device, dtype=dtype)
 
         X = _torch_solve_cast(A, B)
         error = torch.dist(B, A.matmul(X))
-
         tol_val: float = 1e-1 if dtype == torch.float16 else 1e-4
         assert_close(error, torch.zeros_like(error), atol=tol_val, rtol=tol_val)
 
 
 class TestSolveWithMask:
     def test_smoke(self, device, dtype):
+        torch.manual_seed(0)  # issue kornia#2027
         A = torch.randn(2, 3, 1, 4, 4, device=device, dtype=dtype)
         B = torch.randn(2, 3, 1, 4, 6, device=device, dtype=dtype)
 
@@ -126,8 +127,8 @@ class TestSolveWithMask:
             assert_close(X[mask], X2[mask], atol=tol_val, rtol=tol_val)
 
     @pytest.mark.skipif(
-        (int(torch.__version__.split('.')[0]) == 1) and (int(torch.__version__.split('.')[1]) < 10),
-        reason='<1.10.0 not supporting',
+        (int(torch.__version__.split(".")[0]) == 1) and (int(torch.__version__.split(".")[1]) < 10),
+        reason="<1.10.0 not supporting",
     )
     def test_all_bad(self, device, dtype):
         A = torch.ones(10, 3, 3, device=device, dtype=dtype)
@@ -148,10 +149,6 @@ class TestInverseWithMask:
         assert_close(y, y_expected)
         assert torch.equal(mask, torch.ones_like(mask))
 
-    @pytest.mark.skipif(
-        (int(torch.__version__.split('.')[0]) == 1) and (int(torch.__version__.split('.')[1]) < 9),
-        reason='<1.9.0 not supporting',
-    )
     def test_all_bad(self, device, dtype):
         A = torch.ones(10, 3, 3, device=device, dtype=dtype)
         X, mask = safe_inverse_with_mask(A)

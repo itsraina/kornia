@@ -8,6 +8,8 @@ from .homography import *
 from .liegroup import *
 from .linalg import *
 from .line import *
+from .pose import *
 from .ransac import *
+from .solvers import *
 from .subpix import *
 from .transform import *

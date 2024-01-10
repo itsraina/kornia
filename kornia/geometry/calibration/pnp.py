@@ -1,11 +1,12 @@
 from typing import Optional, Tuple
 
 import torch
+from torch.linalg import qr as linalg_qr
 
+from kornia.core import arange, ones_like, where, zeros
 from kornia.geometry.conversions import convert_points_to_homogeneous
 from kornia.geometry.linalg import transform_points
 from kornia.utils import eye_like
-from kornia.utils._compat import linalg_qr
 from kornia.utils.helpers import _torch_linalg_svdvals
 
 
@@ -34,7 +35,7 @@ def _mean_isotropic_scale_normalize(points: torch.Tensor, eps: float = 1e-8) -> 
     scale = torch.sqrt(D_float) / (scale + eps)  # B
     transform = eye_like(D_int + 1, points)  # (B, D+1, D+1)
 
-    idxs = torch.arange(D_int, dtype=torch.int64, device=points.device)
+    idxs = arange(D_int, dtype=torch.int64, device=points.device)
     transform[:, idxs, idxs] = transform[:, idxs, idxs] * scale[:, None]
     transform[:, idxs, D_int] = transform[:, idxs, D_int] + (-scale[:, None] * x_mean[:, 0, idxs])
 
@@ -140,11 +141,11 @@ def solve_pnp_dlt(
 
     if (weights is not None) and (not isinstance(weights, torch.Tensor)):
         raise AssertionError(
-            f"If weights is not None, then weights should be an instance "
+            "If weights is not None, then weights should be an instance "
             f"of torch.Tensor. Type of weights is {type(weights)}"
         )
 
-    if type(svd_eps) is not float:
+    if not isinstance(svd_eps, float):
         raise AssertionError(f"Type of svd_eps is not float. Got {type(svd_eps)}")
 
     accepted_dtypes = (torch.float32, torch.float64)
@@ -157,14 +158,12 @@ def solve_pnp_dlt(
 
     if img_points.dtype not in accepted_dtypes:
         raise AssertionError(
-            f"img_points must have one of the following dtypes {accepted_dtypes}. "
-            f"Currently it has {img_points.dtype}."
+            f"img_points must have one of the following dtypes {accepted_dtypes}. Currently it has {img_points.dtype}."
         )
 
     if intrinsics.dtype not in accepted_dtypes:
         raise AssertionError(
-            f"intrinsics must have one of the following dtypes {accepted_dtypes}. "
-            f"Currently it has {intrinsics.dtype}."
+            f"intrinsics must have one of the following dtypes {accepted_dtypes}. Currently it has {intrinsics.dtype}."
         )
 
     if (len(world_points.shape) != 3) or (world_points.shape[2] != 3):
@@ -184,7 +183,7 @@ def solve_pnp_dlt(
 
     if world_points.shape[1] < 6:
         raise AssertionError(
-            f"At least 6 points are required to use this function. " f"Got {world_points.shape[1]} points."
+            f"At least 6 points are required to use this function. Got {world_points.shape[1]} points."
         )
 
     B, N = world_points.shape[:2]
@@ -198,10 +197,10 @@ def solve_pnp_dlt(
     s = _torch_linalg_svdvals(world_points_norm)
     if torch.any(s[:, -1] < svd_eps):
         raise AssertionError(
-            f"The last singular value of one/more of the elements of the batch is smaller "
+            "The last singular value of one/more of the elements of the batch is smaller "
             f"than {svd_eps}. This function cannot be used if all world_points (of any "
-            f"element of the batch) lie on a line or if all world_points (of any "
-            f"element of the batch) lie on a plane."
+            "element of the batch) lie on a line or if all world_points (of any "
+            "element of the batch) lie on a plane."
         )
 
     intrinsics_inv = torch.inverse(intrinsics)
@@ -215,7 +214,7 @@ def solve_pnp_dlt(
     inv_img_transform_norm = torch.inverse(img_transform_norm)
 
     # Setting up the system (the matrix A in Ax=0)
-    system = torch.zeros((B, 2 * N, 12), dtype=world_points.dtype, device=world_points.device)
+    system = zeros((B, 2 * N, 12), dtype=world_points.dtype, device=world_points.device)
     system[:, 0::2, 0:4] = world_points_norm_h
     system[:, 1::2, 4:8] = world_points_norm_h
     system[:, 0::2, 8:12] = world_points_norm_h * (-1) * img_points_norm[..., 0:1]
@@ -243,11 +242,11 @@ def solve_pnp_dlt(
     # rotation matrices. We do this in two parts:
 
     # First, we fix the sign by making sure that the determinant of
-    # the all the rotation matrices are non negative (since determinant
+    # the all the rotation matrices are non-negative (since determinant
     # of a rotation matrix should be 1).
     det = torch.det(solution[:, :3, :3])
-    ones = torch.ones_like(det)
-    sign_fix = torch.where(det < 0, ones * -1, ones)
+    ones = ones_like(det)
+    sign_fix = where(det < 0, ones * -1, ones)
     solution = solution * sign_fix[:, None, None]
 
     # Then, we make sure that norm of the 0th columns of the rotation
@@ -265,7 +264,7 @@ def solve_pnp_dlt(
     # We may need to fix the signs of the columns of the ortho matrix.
     # If right[i, j, j] is negative, then we need to flip the signs of
     # the column ortho[i, :, j]. The below code performs the necessary
-    # operations in an better way.
+    # operations in a better way.
     mask = eye_like(3, ortho)
     col_sign_fix = torch.sign(mask * right)
     rot_mat = torch.bmm(ortho, col_sign_fix)

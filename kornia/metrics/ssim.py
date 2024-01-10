@@ -1,9 +1,9 @@
 from typing import List
 
 import torch
-import torch.nn as nn
+from torch import nn
 
-from kornia.filters import filter2d, get_gaussian_kernel2d
+from kornia.filters import filter2d_separable, get_gaussian_kernel1d
 from kornia.filters.filter import _compute_padding
 
 
@@ -20,7 +20,7 @@ def ssim(
     window_size: int,
     max_val: float = 1.0,
     eps: float = 1e-12,
-    padding: str = 'same',
+    padding: str = "same",
 ) -> torch.Tensor:
     r"""Function that computes the Structural Similarity (SSIM) index map between two images.
 
@@ -75,38 +75,38 @@ def ssim(
         raise ValueError(f"img1 and img2 shapes must be the same. Got: {img1.shape} and {img2.shape}")
 
     # prepare kernel
-    kernel: torch.Tensor = get_gaussian_kernel2d((window_size, window_size), (1.5, 1.5)).unsqueeze(0)
+    kernel: torch.Tensor = get_gaussian_kernel1d(window_size, 1.5, device=img1.device, dtype=img1.dtype)
 
     # compute coefficients
     C1: float = (0.01 * max_val) ** 2
     C2: float = (0.03 * max_val) ** 2
 
     # compute local mean per channel
-    mu1: torch.Tensor = filter2d(img1, kernel)
-    mu2: torch.Tensor = filter2d(img2, kernel)
+    mu1: torch.Tensor = filter2d_separable(img1, kernel, kernel)
+    mu2: torch.Tensor = filter2d_separable(img2, kernel, kernel)
 
     cropping_shape: List[int] = []
-    if padding == 'valid':
-        height, width = kernel.shape[-2:]
+    if padding == "valid":
+        height = width = kernel.shape[-1]
         cropping_shape = _compute_padding([height, width])
         mu1 = _crop(mu1, cropping_shape)
         mu2 = _crop(mu2, cropping_shape)
-    elif padding == 'same':
+    elif padding == "same":
         pass
 
     mu1_sq = mu1**2
     mu2_sq = mu2**2
     mu1_mu2 = mu1 * mu2
 
-    mu_img1_sq = filter2d(img1**2, kernel)
-    mu_img2_sq = filter2d(img2**2, kernel)
-    mu_img1_img2 = filter2d(img1 * img2, kernel)
+    mu_img1_sq = filter2d_separable(img1**2, kernel, kernel)
+    mu_img2_sq = filter2d_separable(img2**2, kernel, kernel)
+    mu_img1_img2 = filter2d_separable(img1 * img2, kernel, kernel)
 
-    if padding == 'valid':
+    if padding == "valid":
         mu_img1_sq = _crop(mu_img1_sq, cropping_shape)
         mu_img2_sq = _crop(mu_img2_sq, cropping_shape)
         mu_img1_img2 = _crop(mu_img1_img2, cropping_shape)
-    elif padding == 'same':
+    elif padding == "same":
         pass
 
     # compute local sigma per channel
@@ -158,7 +158,7 @@ class SSIM(nn.Module):
         >>> ssim_map = ssim(input1, input2)  # 1x4x5x5
     """
 
-    def __init__(self, window_size: int, max_val: float = 1.0, eps: float = 1e-12, padding: str = 'same') -> None:
+    def __init__(self, window_size: int, max_val: float = 1.0, eps: float = 1e-12, padding: str = "same") -> None:
         super().__init__()
         self.window_size: int = window_size
         self.max_val: float = max_val

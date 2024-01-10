@@ -12,21 +12,22 @@
 <!-- prettier-ignore -->
 <a href="https://kornia.org">网站</a> •
 <a href="https://kornia.readthedocs.io">文档</a> •
-<a href="https://colab.research.google.com/github/kornia/tutorials/blob/master/source/hello_world_tutorial.ipynb">快速尝试</a> •
-<a href="https://kornia-tutorials.readthedocs.io">教程</a> •
+<a href="https://colab.sandbox.google.com/github/kornia/tutorials/blob/master/nbs/hello_world_tutorial.ipynb">快速尝试</a> •
+<a href="https://kornia.github.io/tutorials/">教程</a> •
 <a href="https://github.com/kornia/kornia-examples">例子</a> •
 <a href="https://kornia.github.io//kornia-blog">博客</a> •
 <a href="https://join.slack.com/t/kornia/shared_invite/zt-csobk21g-CnydWe5fmvkcktIeRFGCEQ">Slack社区</a>
 
 [![PyPI python](https://img.shields.io/pypi/pyversions/kornia)](https://pypi.org/project/kornia)
-[![PyPI version](https://badge.fury.io/py/kornia.svg)](https://pypi.org/project/kornia)
-[![Downloads](https://pepy.tech/badge/kornia)](https://pepy.tech/project/kornia)
+[![pytorch](https://img.shields.io/badge/PyTorch_1.9.1+-ee4c2c?logo=pytorch&logoColor=white)](https://pytorch.org/get-started/locally/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENCE)
+
+[![PyPI version](https://badge.fury.io/py/kornia.svg)](https://pypi.org/project/kornia)
+[![Downloads](https://static.pepy.tech/badge/kornia)](https://pepy.tech/project/kornia)
 [![Slack](https://img.shields.io/badge/Slack-4A154B?logo=slack&logoColor=white)](https://join.slack.com/t/kornia/shared_invite/zt-csobk21g-2AQRi~X9Uu6PLMuUZdvfjA)
 [![Twitter](https://img.shields.io/twitter/follow/kornia_foss?style=social)](https://twitter.com/kornia_foss)
 
-[![tests-cpu](https://github.com/kornia/kornia/actions/workflows/tests_cpu.yml/badge.svg)](https://github.com/kornia/kornia/actions/workflows/tests_cpu.yml)
-[![tests-cuda](https://github.com/kornia/kornia/actions/workflows/tests_cuda.yml/badge.svg)](https://github.com/kornia/kornia/actions/workflows/tests_cuda.yml)
+[![tests-cpu](https://github.com/kornia/kornia/actions/workflows/scheduled_test_cpu.yml/badge.svg?event=schedule&&branch=master)](https://github.com/kornia/kornia/actions/workflows/scheduled_test_cpu.yml)
 [![codecov](https://codecov.io/gh/kornia/kornia/branch/master/graph/badge.svg?token=FzCb7e0Bso)](https://codecov.io/gh/kornia/kornia)
 [![Documentation Status](https://readthedocs.org/projects/kornia/badge/?version=latest)](https://kornia.readthedocs.io/en/latest/?badge=latest)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/kornia/kornia/master.svg)](https://results.pre-commit.ci/latest/github/kornia/kornia/master)
@@ -103,10 +104,10 @@
 
 ## 例子
 
-可以尝试通过这些 [教程](https://kornia-tutorials.readthedocs.io/en/latest/) 来学习和使用这个库。
+可以尝试通过这些 [教程](https://kornia.github.io/tutorials/) 来学习和使用这个库。
 
 <div align="center">
-  <a href="https://colab.research.google.com/github/kornia/tutorials/blob/master/source/hello_world_tutorial.ipynb" target="_blank">
+  <a href="https://colab.sandbox.google.com/github/kornia/tutorials/blob/master/nbs/hello_world_tutorial.ipynb" target="_blank">
     <img src="https://raw.githubusercontent.com/kornia/data/main/hello_world_arturito.png" width="75%" height="75%">
   </a>
 </div>
@@ -129,7 +130,7 @@
   ```
 
 ## 贡献
-我们感谢所有的贡献者为改进和提升 Kornia 所作出的努力。您可以直接修复一个已知的BUG而无需进一步讨论；如果您想要添加一个任何新的或者扩展功能，请务必先通过提交一个Issue来与我们讨论。详情请阅读 [贡献指南](https://github.com/kornia/kornia/blob/master/CONTRIBUTING.rst)。开源项目的参与者请务必了解如下 [规范](https://github.com/kornia/kornia/blob/master/CODE_OF_CONDUCT.md)。
+我们感谢所有的贡献者为改进和提升 Kornia 所作出的努力。您可以直接修复一个已知的BUG而无需进一步讨论；如果您想要添加一个任何新的或者扩展功能，请务必先通过提交一个Issue来与我们讨论。详情请阅读 [贡献指南](https://github.com/kornia/kornia/blob/master/CONTRIBUTING.md)。开源项目的参与者请务必了解如下 [规范](https://github.com/kornia/kornia/blob/master/CODE_OF_CONDUCT.md)。
 
 ## 社区
 - **论坛:** 讨论代码实现，学术研究等。[GitHub Forums](https://github.com/kornia/kornia/discussions)

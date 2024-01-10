@@ -1,3 +1,5 @@
+from typing import Any
+
 import torch
 
 from kornia.core import Tensor, stack, zeros
@@ -6,7 +8,7 @@ from kornia.utils.grid import create_meshgrid
 
 
 class StereoException(Exception):
-    def __init__(self, msg: str, *args, **kwargs):
+    def __init__(self, msg: str, *args: Any, **kwargs: Any) -> None:
         r"""Custom exception for the :module:`~kornia.geometry.camera.stereo` module.
 
         Adds a general helper module redirecting the user to the proper documentation site.
@@ -27,7 +29,7 @@ class StereoException(Exception):
 
 
 class StereoCamera:
-    def __init__(self, rectified_left_camera: Tensor, rectified_right_camera: Tensor):
+    def __init__(self, rectified_left_camera: Tensor, rectified_right_camera: Tensor) -> None:
         r"""Class representing a horizontal stereo camera setup.
 
         Args:
@@ -46,7 +48,7 @@ class StereoCamera:
         self._Q_matrix = self._init_Q_matrix()
 
     @staticmethod
-    def _check_stereo_camera(rectified_left_camera: Tensor, rectified_right_camera: Tensor):
+    def _check_stereo_camera(rectified_left_camera: Tensor, rectified_right_camera: Tensor) -> None:
         r"""Utility function to ensure user specified correct camera matrices.
 
         Args:
@@ -58,54 +60,52 @@ class StereoCamera:
         # Ensure correct shapes
         if len(rectified_left_camera.shape) != 3:
             raise StereoException(
-                f"Expected 'rectified_left_camera' to have 3 dimensions. " f"Got {rectified_left_camera.shape}."
+                f"Expected 'rectified_left_camera' to have 3 dimensions. Got {rectified_left_camera.shape}."
             )
 
         if len(rectified_right_camera.shape) != 3:
             raise StereoException(
-                f"Expected 'rectified_right_camera' to have 3 dimension. " f"Got {rectified_right_camera.shape}."
+                f"Expected 'rectified_right_camera' to have 3 dimension. Got {rectified_right_camera.shape}."
             )
 
         if rectified_left_camera.shape[:1] == (3, 4):
             raise StereoException(
-                f"Expected each 'rectified_left_camera' to be of shape (3, 4)."
-                f"Got {rectified_left_camera.shape[:1]}."
+                f"Expected each 'rectified_left_camera' to be of shape (3, 4).Got {rectified_left_camera.shape[:1]}."
             )
 
         if rectified_right_camera.shape[:1] == (3, 4):
             raise StereoException(
-                f"Expected each 'rectified_right_camera' to be of shape (3, 4)."
-                f"Got {rectified_right_camera.shape[:1]}."
+                f"Expected each 'rectified_right_camera' to be of shape (3, 4).Got {rectified_right_camera.shape[:1]}."
             )
 
         # Ensure same devices for cameras.
         if rectified_left_camera.device != rectified_right_camera.device:
             raise StereoException(
-                f"Expected 'rectified_left_camera' and 'rectified_right_camera' "
-                f"to be on the same devices."
+                "Expected 'rectified_left_camera' and 'rectified_right_camera' "
+                "to be on the same devices."
                 f"Got {rectified_left_camera.device} and {rectified_right_camera.device}."
             )
 
         # Ensure same dtypes for cameras.
         if rectified_left_camera.dtype != rectified_right_camera.dtype:
             raise StereoException(
-                f"Expected 'rectified_left_camera' and 'rectified_right_camera' to"
-                f"have same dtype."
+                "Expected 'rectified_left_camera' and 'rectified_right_camera' to"
+                "have same dtype."
                 f"Got {rectified_left_camera.dtype} and {rectified_right_camera.dtype}."
             )
 
         # Ensure all intrinsics parameters (fx, fy, cx, cy) are the same in both cameras.
         if not torch.all(torch.eq(rectified_left_camera[..., :, :3], rectified_right_camera[..., :, :3])):
             raise StereoException(
-                f"Expected 'left_rectified_camera' and 'rectified_right_camera' to have"
-                f"same parameters except for the last column."
+                "Expected 'left_rectified_camera' and 'rectified_right_camera' to have"
+                "same parameters except for the last column."
                 f"Got {rectified_left_camera[..., :, :3]} and {rectified_right_camera[..., :, :3]}."
             )
 
         # Ensure that tx * fx is negative and exists.
         tx_fx = rectified_right_camera[..., 0, 3]
         if torch.all(torch.gt(tx_fx, 0)):
-            raise StereoException(f"Expected :math:`T_x * f_x` to be negative." f"Got {tx_fx}.")
+            raise StereoException(f"Expected :math:`T_x * f_x` to be negative. Got {tx_fx}.")
 
     @property
     def batch_size(self) -> int:
@@ -221,7 +221,7 @@ class StereoCamera:
         return reproject_disparity_to_3D(disparity_tensor, self.Q)
 
 
-def _check_disparity_tensor(disparity_tensor: Tensor):
+def _check_disparity_tensor(disparity_tensor: Tensor) -> None:
     r"""Utility function to ensure correct user provided correct disparity tensor.
 
     Args:
@@ -233,42 +233,39 @@ def _check_disparity_tensor(disparity_tensor: Tensor):
         )
 
     if len(disparity_tensor.shape) != 4:
-        raise StereoException(f"Expected 'disparity_tensor' to have 4 dimensions." f"Got {disparity_tensor.shape}.")
+        raise StereoException(f"Expected 'disparity_tensor' to have 4 dimensions. Got {disparity_tensor.shape}.")
 
     if disparity_tensor.shape[-1] != 1:
         raise StereoException(
-            f"Expected dimension 1 of 'disparity_tensor' to be 1 for as single channeled disparity map."
+            "Expected dimension 1 of 'disparity_tensor' to be 1 for as single channeled disparity map."
             f"Got {disparity_tensor.shape}."
         )
 
     if disparity_tensor.dtype not in (torch.float16, torch.float32, torch.float64):
         raise StereoException(
-            f"Expected 'disparity_tensor' to have dtype torch.float16, torch.float32 or torch.float64."
+            "Expected 'disparity_tensor' to have dtype torch.float16, torch.float32 or torch.float64."
             f"Got {disparity_tensor.dtype}"
         )
 
 
-def _check_Q_matrix(Q_matrix: Tensor):
+def _check_Q_matrix(Q_matrix: Tensor) -> None:
     r"""Utility function to ensure Q matrix is of correct form.
 
     Args:
         Q_matrix: The Q matrix for reprojecting disparity to a point cloud of shape :math:`(B, 4, 4)`
     """
-
     if not isinstance(Q_matrix, Tensor):
         raise StereoException(f"Expected 'Q_matrix' to be an instance of Tensor but got {type(Q_matrix)}.")
 
     if not len(Q_matrix.shape) == 3:
-        raise StereoException(f"Expected 'Q_matrix' to have 3 dimensions." f"Got {Q_matrix.shape}")
+        raise StereoException(f"Expected 'Q_matrix' to have 3 dimensions. Got {Q_matrix.shape}")
 
     if not Q_matrix.shape[1:] == (4, 4):
-        raise StereoException(
-            f"Expected last two dimensions of 'Q_matrix' to be of shape (4, 4)." f"Got {Q_matrix.shape}"
-        )
+        raise StereoException(f"Expected last two dimensions of 'Q_matrix' to be of shape (4, 4). Got {Q_matrix.shape}")
 
     if Q_matrix.dtype not in (torch.float16, torch.float32, torch.float64):
         raise StereoException(
-            f"Expected 'Q_matrix' to be of type torch.float16, torch.float32 or torch.float64." f"Got {Q_matrix.dtype}"
+            f"Expected 'Q_matrix' to be of type torch.float16, torch.float32 or torch.float64. Got {Q_matrix.dtype}"
         )
 
 
@@ -299,9 +296,9 @@ def reproject_disparity_to_3D(disparity_tensor: Tensor, Q_matrix: Tensor) -> Ten
     # Final check that everything went well.
     if not points.shape == (batch_size, rows, cols, 3):
         raise StereoException(
-            f"Something went wrong in `reproject_disparity_to_3D`. Expected the final output"
+            "Something went wrong in `reproject_disparity_to_3D`. Expected the final output"
             f"to be of shape {(batch_size, rows, cols, 3)}."
             f"But the computed point cloud had shape {points.shape}. "
-            f"Please ensure input are correct. If this is an error, please submit an issue."
+            "Please ensure input are correct. If this is an error, please submit an issue."
         )
     return points

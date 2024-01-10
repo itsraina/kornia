@@ -8,7 +8,6 @@ import kornia
 import kornia.testing as utils  # test utils
 from kornia.core import Tensor
 from kornia.testing import assert_close
-from kornia.utils._compat import torch_version_le
 
 
 def random_shape(dim, min_elem=1, max_elem=10):
@@ -16,7 +15,6 @@ def random_shape(dim, min_elem=1, max_elem=10):
 
 
 class TestAddWeighted:
-
     fcn = kornia.enhance.add_weighted
 
     def get_input(self, device, dtype, size, max_elem=10):
@@ -55,24 +53,23 @@ class TestAddWeighted:
             gamma = gamma.to(src1)
         assert_close(TestAddWeighted.fcn(src1, alpha, src2, beta, gamma), src1 * alpha + src2 * beta + gamma)
 
-    @pytest.mark.skipif(
-        torch_version_le(1, 13, 0), reason="`Union` type hint not supported in JIT with PyTorch <= 1.11.0"
-    )
-    def test_jit(self, device, dtype):
+    def test_dynamo(self, device, dtype, torch_optimizer):
         src1, src2, alpha, beta, gamma = self.get_input(device, dtype, size=3)
         inputs = (src1, alpha, src2, beta, gamma)
 
         op = TestAddWeighted.fcn
-        op_script = torch.jit.script(op)
+        op_optimized = torch_optimizer(op)
 
-        assert_close(op(*inputs), op_script(*inputs), atol=1e-4, rtol=1e-4)
+        assert_close(op(*inputs), op_optimized(*inputs), atol=1e-4, rtol=1e-4)
 
     @pytest.mark.parametrize("size", [2, 3])
     def test_gradcheck(self, size, device, dtype):
         src1, src2, alpha, beta, gamma = self.get_input(device, dtype, size=3, max_elem=5)  # to shave time on gradcheck
         src1 = utils.tensor_to_gradcheck_var(src1)  # to var
         src2 = utils.tensor_to_gradcheck_var(src2)  # to var
-        assert gradcheck(kornia.enhance.AddWeighted(alpha, beta, gamma), (src1, src2), raise_exception=True)
+        assert gradcheck(
+            kornia.enhance.AddWeighted(alpha, beta, gamma), (src1, src2), raise_exception=True, fast_mode=True
+        )
 
     def test_module(self, device, dtype):
         src1, src2, alpha, beta, gamma = self.get_input(device, dtype, size=3)

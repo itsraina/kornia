@@ -1,13 +1,12 @@
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
-
-import torch
-from torch import Tensor
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from kornia.augmentation import random_generator as rg
 from kornia.augmentation._2d.geometric.base import GeometricAugmentationBase2D
 from kornia.constants import Resample
+from kornia.core import Tensor, as_tensor
 from kornia.geometry.transform import affine
 from kornia.geometry.transform.affwarp import _compute_rotation_matrix, _compute_tensor_center
+from kornia.utils.misc import eye_like
 
 
 class RandomRotation(GeometricAugmentationBase2D):
@@ -68,13 +67,11 @@ class RandomRotation(GeometricAugmentationBase2D):
         align_corners: bool = True,
         p: float = 0.5,
         keepdim: bool = False,
-        return_transform: Optional[bool] = None,
     ) -> None:
-        super().__init__(p=p, return_transform=return_transform, same_on_batch=same_on_batch, keepdim=keepdim)
-        self._param_generator = cast(
-            rg.PlainUniformGenerator, rg.PlainUniformGenerator((degrees, "degrees", 0.0, (-360.0, 360.0)))
-        )
-        self.flags = dict(resample=Resample.get(resample), align_corners=align_corners)
+        super().__init__(p=p, same_on_batch=same_on_batch, keepdim=keepdim)
+        self._param_generator = rg.PlainUniformGenerator((degrees, "degrees", 0.0, (-360.0, 360.0)))
+
+        self.flags = {"resample": Resample.get(resample), "align_corners": align_corners}
 
     def compute_transformation(self, input: Tensor, params: Dict[str, Tensor], flags: Dict[str, Any]) -> Tensor:
         # TODO: Update to use `get_rotation_matrix2d`
@@ -84,7 +81,7 @@ class RandomRotation(GeometricAugmentationBase2D):
         rotation_mat: Tensor = _compute_rotation_matrix(angles, center.expand(angles.shape[0], -1))
 
         # rotation_mat is B x 2 x 3 and we need a B x 3 x 3 matrix
-        trans_mat: Tensor = torch.eye(3, device=input.device, dtype=input.dtype).repeat(input.shape[0], 1, 1)
+        trans_mat: Tensor = eye_like(3, input, shared_memory=False)
         trans_mat[:, 0] = rotation_mat[:, 0]
         trans_mat[:, 1] = rotation_mat[:, 1]
 
@@ -93,7 +90,8 @@ class RandomRotation(GeometricAugmentationBase2D):
     def apply_transform(
         self, input: Tensor, params: Dict[str, Tensor], flags: Dict[str, Any], transform: Optional[Tensor] = None
     ) -> Tensor:
-        transform = cast(Tensor, transform)
+        if not isinstance(transform, Tensor):
+            raise TypeError(f"Expected the `transform` be a Tensor. Got {type(transform)}.")
 
         return affine(input, transform[..., :2, :3], flags["resample"].name.lower(), "zeros", flags["align_corners"])
 
@@ -104,9 +102,11 @@ class RandomRotation(GeometricAugmentationBase2D):
         transform: Optional[Tensor] = None,
         size: Optional[Tuple[int, int]] = None,
     ) -> Tensor:
+        if not isinstance(transform, Tensor):
+            raise TypeError(f"Expected the `transform` be a Tensor. Got {type(transform)}.")
         return self.apply_transform(
             input,
             params=self._params,
-            transform=torch.as_tensor(transform, device=input.device, dtype=input.dtype),
+            transform=as_tensor(transform, device=input.device, dtype=input.dtype),
             flags=flags,
         )

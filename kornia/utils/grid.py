@@ -1,8 +1,8 @@
 from typing import Optional
 
 import torch
-from torch import Tensor, stack
 
+from kornia.core import Tensor, stack
 from kornia.utils._compat import torch_meshgrid
 
 
@@ -10,8 +10,8 @@ def create_meshgrid(
     height: int,
     width: int,
     normalized_coordinates: bool = True,
-    device: Optional[torch.device] = torch.device('cpu'),
-    dtype: torch.dtype = torch.float32,
+    device: Optional[torch.device] = None,
+    dtype: Optional[torch.dtype] = None,
 ) -> Tensor:
     """Generate a coordinate grid for an image.
 
@@ -60,6 +60,11 @@ def create_meshgrid(
         xs = (xs / (width - 1) - 0.5) * 2
         ys = (ys / (height - 1) - 0.5) * 2
     # generate grid by stacking coordinates
+    # TODO: torchscript doesn't like `torch_version_ge`
+    # if torch_version_ge(1, 13, 0):
+    #     x, y = torch_meshgrid([xs, ys], indexing="xy")
+    #     return stack([x, y], -1).unsqueeze(0)  # 1xHxWx2
+    # TODO: remove after we drop support of old versions
     base_grid: Tensor = stack(torch_meshgrid([xs, ys], indexing="ij"), dim=-1)  # WxHx2
     return base_grid.permute(1, 0, 2).unsqueeze(0)  # 1xHxWx2
 
@@ -69,8 +74,8 @@ def create_meshgrid3d(
     height: int,
     width: int,
     normalized_coordinates: bool = True,
-    device: Optional[torch.device] = torch.device('cpu'),
-    dtype: torch.dtype = torch.float32,
+    device: Optional[torch.device] = None,
+    dtype: Optional[torch.dtype] = None,
 ) -> Tensor:
     """Generate a coordinate grid for an image.
 

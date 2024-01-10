@@ -178,7 +178,10 @@ class TestResize:
         input = torch.rand(1, 2, 3, 4, device=device, dtype=dtype)
         input = utils.tensor_to_gradcheck_var(input)  # to var
         assert gradcheck(
-            kornia.geometry.transform.Resize(new_size, align_corners=False), (input,), raise_exception=True
+            kornia.geometry.transform.Resize(new_size, align_corners=False),
+            (input,),
+            raise_exception=True,
+            fast_mode=True,
         )
 
 
@@ -250,7 +253,13 @@ class TestRescale:
     def test_gradcheck(self, device, dtype):
         input = torch.rand(1, 2, 3, 4, device=device, dtype=dtype)
         input = utils.tensor_to_gradcheck_var(input)
-        assert gradcheck(kornia.geometry.transform.Rescale(2.0, align_corners=False), (input,), raise_exception=True)
+        assert gradcheck(
+            kornia.geometry.transform.Rescale(2.0, align_corners=False),
+            (input,),
+            nondet_tol=1e-8,
+            raise_exception=True,
+            fast_mode=True,
+        )
 
 
 class TestRotate:
@@ -301,9 +310,9 @@ class TestRotate:
         # evaluate function gradient
         input = torch.rand(1, 2, 3, 4, device=device, dtype=dtype)
         input = utils.tensor_to_gradcheck_var(input)  # to var
-        assert gradcheck(kornia.geometry.transform.rotate, (input, angle), raise_exception=True)
+        assert gradcheck(kornia.geometry.transform.rotate, (input, angle), raise_exception=True, fast_mode=True)
 
-    @pytest.mark.skip('Need deep look into it since crashes everywhere.')
+    @pytest.mark.skip("Need deep look into it since crashes everywhere.")
     @pytest.mark.skip(reason="turn off all jit for a while")
     def test_jit(self, device, dtype):
         angle = torch.tensor([90.0], device=device, dtype=dtype)
@@ -362,9 +371,11 @@ class TestTranslate:
         # evaluate function gradient
         input = torch.rand(1, 2, 3, 4, device=device, dtype=dtype)
         input = utils.tensor_to_gradcheck_var(input)  # to var
-        assert gradcheck(kornia.geometry.transform.translate, (input, translation), raise_exception=True)
+        assert gradcheck(
+            kornia.geometry.transform.translate, (input, translation), raise_exception=True, fast_mode=True
+        )
 
-    @pytest.mark.skip('Need deep look into it since crashes everywhere.')
+    @pytest.mark.skip("Need deep look into it since crashes everywhere.")
     @pytest.mark.skip(reason="turn off all jit for a while")
     def test_jit(self, device, dtype):
         translation = torch.tensor([[1.0, 0.0]], device=device, dtype=dtype)
@@ -447,9 +458,9 @@ class TestScale:
         # evaluate function gradient
         input = torch.rand(1, 2, 3, 4, device=device, dtype=dtype)
         input = utils.tensor_to_gradcheck_var(input)  # to var
-        assert gradcheck(kornia.geometry.transform.scale, (input, scale_factor), raise_exception=True)
+        assert gradcheck(kornia.geometry.transform.scale, (input, scale_factor), raise_exception=True, fast_mode=True)
 
-    @pytest.mark.skip('Need deep look into it since crashes everywhere.')
+    @pytest.mark.skip("Need deep look into it since crashes everywhere.")
     @pytest.mark.skip(reason="turn off all jit for a while")
     def test_jit(self, device, dtype):
         scale_factor = torch.tensor([[0.5, 0.5]], device=device, dtype=dtype)
@@ -546,9 +557,9 @@ class TestShear:
         # evaluate function gradient
         input = torch.rand(1, 2, 3, 4, device=device, dtype=dtype)
         input = utils.tensor_to_gradcheck_var(input)  # to var
-        assert gradcheck(kornia.geometry.transform.shear, (input, shear), raise_exception=True)
+        assert gradcheck(kornia.geometry.transform.shear, (input, shear), raise_exception=True, fast_mode=True)
 
-    @pytest.mark.skip('Need deep look into it since crashes everywhere.')
+    @pytest.mark.skip("Need deep look into it since crashes everywhere.")
     @pytest.mark.skip(reason="turn off all jit for a while")
     def test_jit(self, device, dtype):
         shear = torch.tensor([[0.5, 0.0]], device=device, dtype=dtype)
@@ -572,7 +583,7 @@ class TestAffine2d:
 
     def test_affine_rotate(self, device, dtype):
         # TODO: Remove when #666 is implemented
-        if device.type == 'cuda':
+        if device.type == "cuda":
             pytest.skip("Currently breaks in CUDA." "See https://github.com/kornia/kornia/issues/666")
         torch.manual_seed(0)
         angle = torch.rand(1, device=device, dtype=dtype) * 90.0
@@ -585,7 +596,7 @@ class TestAffine2d:
 
     def test_affine_translate(self, device, dtype):
         # TODO: Remove when #666 is implemented
-        if device.type == 'cuda':
+        if device.type == "cuda":
             pytest.skip("Currently breaks in CUDA." "See https://github.com/kornia/kornia/issues/666")
         torch.manual_seed(0)
         translation = torch.rand(1, 2, device=device, dtype=dtype) * 2.0
@@ -598,7 +609,7 @@ class TestAffine2d:
 
     def test_affine_scale(self, device, dtype):
         # TODO: Remove when #666 is implemented
-        if device.type == 'cuda':
+        if device.type == "cuda":
             pytest.skip("Currently breaks in CUDA." "See https://github.com/kornia/kornia/issues/666")
         torch.manual_seed(0)
         _scale_factor = torch.rand(1, device=device, dtype=dtype) * 2.0
@@ -626,7 +637,7 @@ class TestAffine2d:
 
     def test_affine_rotate_translate(self, device, dtype):
         # TODO: Remove when #666 is implemented
-        if device.type == 'cuda':
+        if device.type == "cuda":
             pytest.skip("Currently breaks in CUDA." "See https://github.com/kornia/kornia/issues/666")
         batch_size = 2
 
@@ -687,7 +698,7 @@ class TestAffine2d:
         batch_size, _, height, width = 1, 1, 96, 96
         angle, translations = 6.971339922894188, (0.0, -4.0)
         scale, shear = [0.7785685905190581, 0.7785685905190581], [11.8235607082617, 7.06797949691645]
-        matrix_expected = T([[1.27536969, 4.26828945e-01, -3.2876e01], [2.18297196e-03, 1.29424165e00, -1.1717e01]])
+        matrix_expected = T([[1.27536969, 4.26828945e-01, -3.2349e01], [2.18297196e-03, 1.29424165e00, -9.1996e00]])
         center = T([float(width), float(height)]).view(1, 2) / 2.0 + 0.5
         center = center.expand(batch_size, -1)
         matrix_kornia = kornia.geometry.transform.get_affine_matrix2d(
@@ -720,3 +731,21 @@ class TestGetAffineMatrix:
 
         out = kornia.geometry.transform.warp_affine(img, affine_mat[:, :2], (H, W))
         assert_close(out, expected)
+
+
+class TestGetShearMatrix:
+    def test_get_shear_matrix2d_with_controlled_values(self, device, dtype):
+        # Define controlled values for shear angles and center
+        sx = torch.tensor([0.5], device=device, dtype=dtype)
+        sy = torch.tensor([0.25], device=device, dtype=dtype)
+        center = torch.tensor([[0.0, 0.0]], device=device, dtype=dtype)
+
+        # Calculate the shear matrix using your function
+        out = kornia.geometry.transform.get_shear_matrix2d(center, sx=sx, sy=sy)
+
+        # Define the expected shear matrix with controlled numbers
+        expected = torch.tensor(
+            [[[1.0, -0.5463, 0.0], [-0.2553, 1.1395, 0.0], [0.0, 0.0, 1.0]]], device=device, dtype=dtype
+        )
+
+        assert_close(out, expected, atol=1e-4, rtol=1e-4)

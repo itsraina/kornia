@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from kornia.core import Module, Tensor
-from kornia.testing import KORNIA_CHECK, KORNIA_CHECK_SHAPE
+from kornia.core.check import KORNIA_CHECK, KORNIA_CHECK_SHAPE
 
 
 def total_variation(img: Tensor, reduction: str = "sum") -> Tensor:
@@ -21,14 +23,17 @@ def total_variation(img: Tensor, reduction: str = "sum") -> Tensor:
         torch.Size([2, 5, 3])
 
     .. note::
-       See a working example `here <https://kornia-tutorials.readthedocs.io/en/latest/
-       total_variation_denoising.html>`__.
+       See a working example `here <https://kornia.github.io/tutorials/nbs/total_variation_denoising.html>`__.
        Total Variation is formulated with summation, however this is not resolution invariant.
        Thus, `reduction='mean'` was added as an optional reduction method.
 
     Reference:
         [1] https://en.wikipedia.org/wiki/Total_variation
     """
+    # TODO: here torchscript doesn't like KORNIA_CHECK_TYPE
+    if not isinstance(img, Tensor):
+        raise TypeError(f"Not a Tensor type. Got: {type(img)}")
+
     KORNIA_CHECK_SHAPE(img, ["*", "H", "W"])
     KORNIA_CHECK(reduction in ("mean", "sum"), f"Expected reduction to be one of 'mean'/'sum', but got '{reduction}'.")
 
@@ -49,6 +54,8 @@ def total_variation(img: Tensor, reduction: str = "sum") -> Tensor:
     elif reduction == "sum":
         res1 = res1.sum(dim=reduce_axes)
         res2 = res2.sum(dim=reduce_axes)
+    else:
+        raise NotImplementedError("Invalid reduction option.")
 
     return res1 + res2
 
@@ -72,5 +79,5 @@ class TotalVariation(Module):
         [1] https://en.wikipedia.org/wiki/Total_variation
     """
 
-    def forward(self, img) -> Tensor:
+    def forward(self, img: Tensor) -> Tensor:
         return total_variation(img)

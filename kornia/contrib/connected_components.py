@@ -1,8 +1,10 @@
 import torch
 import torch.nn.functional as F
 
+from kornia.core import Tensor
 
-def connected_components(image: torch.Tensor, num_iterations: int = 100) -> torch.Tensor:
+
+def connected_components(image: Tensor, num_iterations: int = 100) -> Tensor:
     r"""Computes the Connected-component labelling (CCL) algorithm.
 
     .. image:: https://github.com/kornia/data/raw/main/cells_segmented.png
@@ -15,8 +17,7 @@ def connected_components(image: torch.Tensor, num_iterations: int = 100) -> torc
         This is an experimental API subject to changes and optimization improvements.
 
     .. note::
-       See a working example `here <https://kornia-tutorials.readthedocs.io/en/latest/
-       connected_components.html>`__.
+       See a working example `here <https://kornia.github.io/tutorials/nbs/connected_components.html>`__.
 
     Args:
         image: the binarized input image with shape :math:`(*, 1, H, W)`.
@@ -30,8 +31,8 @@ def connected_components(image: torch.Tensor, num_iterations: int = 100) -> torc
         >>> img = torch.rand(2, 1, 4, 5)
         >>> img_labels = connected_components(img, num_iterations=100)
     """
-    if not isinstance(image, torch.Tensor):
-        raise TypeError(f"Input imagetype is not a torch.Tensor. Got: {type(image)}")
+    if not isinstance(image, Tensor):
+        raise TypeError(f"Input imagetype is not a Tensor. Got: {type(image)}")
 
     if not isinstance(num_iterations, int) or num_iterations < 1:
         raise TypeError("Input num_iterations must be a positive integer.")
@@ -51,6 +52,7 @@ def connected_components(image: torch.Tensor, num_iterations: int = 100) -> torc
     out[~mask] = 0
 
     for _ in range(num_iterations):
-        out[mask] = F.max_pool2d(out, kernel_size=3, stride=1, padding=1)[mask]
+        out = F.max_pool2d(out, kernel_size=3, stride=1, padding=1)
+        out = torch.mul(out, mask)  # mask using element-wise multiplication
 
     return out.view_as(image)

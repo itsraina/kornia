@@ -2,23 +2,26 @@
 
 Paper: https://paperswithcode.com/paper/an-image-is-worth-16x16-words-transformers-1
 
-Based on: https://towardsdatascience.com/implementing-visualttransformer-in-pytorch-184f9f16f632
-Added some tricks from https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py
+Based on: `https://towardsdatascience.com/implementing-visualttransformer-in-pytorch-184f9f16f632`
+
+Added some tricks from: `https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py`
 """
-from typing import List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import torch
 from torch import nn
 
+from kornia.core import Module, Tensor
+
 __all__ = ["VisionTransformer"]
 
 
-class ResidualAdd(nn.Module):
-    def __init__(self, fn) -> None:
+class ResidualAdd(Module):
+    def __init__(self, fn: Callable[..., Tensor]) -> None:
         super().__init__()
         self.fn = fn
 
-    def forward(self, x, **kwargs) -> None:
+    def forward(self, x: Tensor, **kwargs: Dict[str, Any]) -> Tensor:
         res = x
         x = self.fn(x, **kwargs)
         x += res
@@ -36,13 +39,20 @@ class FeedForward(nn.Sequential):
         )
 
 
-class MultiHeadAttention(nn.Module):
+class MultiHeadAttention(Module):
     def __init__(self, emb_size: int, num_heads: int, att_drop: float, proj_drop: float) -> None:
         super().__init__()
         self.emb_size = emb_size
         self.num_heads = num_heads
         head_size = emb_size // num_heads  # from timm
         self.scale = head_size**-0.5  # from timm
+
+        if self.emb_size % self.num_heads:
+            raise ValueError(
+                f"Size of embedding inside the transformer decoder must be visible by number of heads"
+                f"for correct multi-head attention "
+                f"Got: {self.emb_size} embedding size and {self.num_heads} numbers of heads"
+            )
 
         # fuse the queries, keys and values in one matrix
         self.qkv = nn.Linear(emb_size, emb_size * 3, bias=False)
@@ -55,16 +65,16 @@ class MultiHeadAttention(nn.Module):
         # split keys, queries and values in num_heads
         # NOTE: the line below differs from timm
         # timm: qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
-        qkv = self.qkv(x).reshape(B, N, 3, -1, C).permute(2, 0, 3, 1, 4)
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]
 
         # sum up over the last axis
-        att = torch.einsum('bhqd, bhkd -> bhqk', q, k) * self.scale
+        att = torch.einsum("bhqd, bhkd -> bhqk", q, k) * self.scale
         att = att.softmax(dim=-1)
         att = self.att_drop(att)
 
         # sum up over the third axis
-        out = torch.einsum('bhal, bhlv -> bhav ', att, v)
+        out = torch.einsum("bhal, bhlv -> bhav ", att, v)
         out = out.permute(0, 2, 1, 3).contiguous().view(B, N, -1)
         out = self.projection(out)
         out = self.projection_drop(out)
@@ -91,7 +101,7 @@ class TransformerEncoderBlock(nn.Sequential):
         )
 
 
-class TransformerEncoder(nn.Module):
+class TransformerEncoder(Module):
     def __init__(
         self,
         embed_dim: int = 768,
@@ -115,7 +125,7 @@ class TransformerEncoder(nn.Module):
         return out
 
 
-class PatchEmbedding(nn.Module):
+class PatchEmbedding(Module):
     """Compute the 2d image patch embedding ready to pass to transformer encoder."""
 
     def __init__(
@@ -124,7 +134,7 @@ class PatchEmbedding(nn.Module):
         out_channels: int = 768,
         patch_size: int = 16,
         image_size: int = 224,
-        backbone: Optional[nn.Module] = None,
+        backbone: Optional[Module] = None,
     ) -> None:
         super().__init__()
         self.in_channels = in_channels
@@ -158,7 +168,7 @@ class PatchEmbedding(nn.Module):
         return x
 
 
-class VisionTransformer(nn.Module):
+class VisionTransformer(Module):
     """Vision transformer (ViT) module.
 
     The module is expected to be used as operator for different vision tasks.
@@ -196,7 +206,7 @@ class VisionTransformer(nn.Module):
         num_heads: int = 12,
         dropout_rate: float = 0.0,
         dropout_attn: float = 0.0,
-        backbone: Optional[nn.Module] = None,
+        backbone: Optional[Module] = None,
     ) -> None:
         super().__init__()
         self.image_size = image_size
@@ -209,7 +219,7 @@ class VisionTransformer(nn.Module):
         self.encoder = TransformerEncoder(hidden_dim, depth, num_heads, dropout_rate, dropout_attn)
 
     @property
-    def encoder_results(self):
+    def encoder_results(self) -> List[Tensor]:
         return self.encoder.results
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -218,8 +228,7 @@ class VisionTransformer(nn.Module):
 
         if self.image_size not in (*x.shape[-2:],) and x.shape[-3] != self.in_channels:
             raise ValueError(
-                f"Input image shape must be Bx{self.in_channels}x{self.image_size}x{self.image_size}. "
-                f"Got: {x.shape}"
+                f"Input image shape must be Bx{self.in_channels}x{self.image_size}x{self.image_size}. Got: {x.shape}"
             )
 
         out = self.patch_embedding(x)

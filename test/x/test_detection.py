@@ -1,9 +1,12 @@
+import sys
+
 import pytest
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.utils.data import Dataset
 
 from kornia.x import Configuration, ObjectDetectionTrainer
+from kornia.x.trainer import Accelerator
 
 
 class DummyDatasetDetection(Dataset):
@@ -23,33 +26,33 @@ class DummyModel(nn.Module):
         return self.model(x)
 
 
-@pytest.fixture
+@pytest.fixture()
 def model():
     return DummyModel()
 
 
-@pytest.fixture
+@pytest.fixture()
 def dataloader():
     dataset = DummyDatasetDetection()
     return torch.utils.data.DataLoader(dataset, batch_size=1)
 
 
-@pytest.fixture
+@pytest.fixture()
 def criterion():
     return nn.MSELoss()
 
 
-@pytest.fixture
+@pytest.fixture()
 def optimizer(model):
     return torch.optim.AdamW(model.parameters())
 
 
-@pytest.fixture
+@pytest.fixture()
 def scheduler(optimizer, dataloader):
     return torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, len(dataloader))
 
 
-@pytest.fixture
+@pytest.fixture()
 def configuration():
     config = Configuration()
     config.num_epochs = 1
@@ -57,6 +60,10 @@ def configuration():
 
 
 class TestObjectDetectionTrainer:
+    @pytest.mark.slow
+    @pytest.mark.skipif(
+        torch.__version__ == "1.12.1" and Accelerator is None, reason="accelerate lib problem with torch 1.12.1"
+    )
     @pytest.mark.parametrize("loss_computed_by_model", [True, False])
     def test_fit(self, model, dataloader, criterion, optimizer, scheduler, configuration, loss_computed_by_model):
         trainer = ObjectDetectionTrainer(
@@ -72,6 +79,10 @@ class TestObjectDetectionTrainer:
         )
         trainer.fit()
 
+    @pytest.mark.skipif(
+        torch.__version__ == "1.12.1" and Accelerator is None, reason="accelerate lib problem with torch 1.12.1"
+    )
+    @pytest.mark.xfail(sys.platform == "darwin", reason="Sometimes CI can fail with MPS backend out of memory")
     def test_exception(self, model, dataloader, criterion, optimizer, scheduler, configuration):
         with pytest.raises(ValueError):
             ObjectDetectionTrainer(
@@ -83,5 +94,5 @@ class TestObjectDetectionTrainer:
                 scheduler,
                 configuration,
                 num_classes=3,
-                callbacks={'frodo': None},
+                callbacks={"frodo": None},
             )

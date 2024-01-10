@@ -5,7 +5,70 @@ import torch
 
 from kornia.testing import assert_close
 from kornia.utils import create_meshgrid, draw_convex_polygon, draw_rectangle
-from kornia.utils.draw import draw_line
+from kornia.utils.draw import draw_line, draw_point2d
+
+
+class TestDrawPoint:
+    """Test drawing individual pixels."""
+
+    def test_draw_point2d_rgb(self, dtype, device):
+        """Test plotting multiple [x, y] points."""
+        points = torch.tensor([(1, 3), (2, 4)], device=device)
+        color = torch.tensor([5, 10, 15], dtype=dtype, device=device)
+        img = torch.zeros(3, 8, 8, dtype=dtype, device=device)
+        img = draw_point2d(img, points, color)
+        for x, y in points:
+            assert_close(img[:, y, x], color.to(img.dtype))
+
+    def test_draw_point2d_grayscale_third_order(self, dtype, device):
+        """Test plotting multiple [x, y] points on a (1, m, n) image."""
+        points = torch.tensor([(1, 3), (2, 4)], device=device)
+        color = torch.tensor([100], dtype=dtype, device=device)
+        img = torch.zeros(1, 8, 8, dtype=dtype, device=device)
+        img = draw_point2d(img, points, color)
+        for x, y in points:
+            assert_close(img[:, y, x], color.to(img.dtype))
+
+    def test_draw_point2d_grayscale_second_order(self, dtype, device):
+        """Test plotting multiple [x, y] points on a (m, n) image."""
+        points = torch.tensor([(1, 3), (2, 4)], device=device)
+        color = torch.tensor([100], dtype=dtype, device=device)
+        img = torch.zeros(8, 8, dtype=dtype, device=device)
+        img = draw_point2d(img, points, color)
+        for x, y in points:
+            assert_close(torch.unsqueeze(img[y, x], dim=0), color.to(img.dtype))
+
+    def test_draw_point2d_with_mismatched_dims(self, dtype, device):
+        """Test that we raise if the len of the color tensor != the # of image channels."""
+        points = torch.tensor([(1, 3), (2, 4)], device=device)
+        color = torch.tensor([100], dtype=dtype, device=device)
+        img = torch.zeros(3, 8, 8, dtype=dtype, device=device)
+        with pytest.raises(Exception):
+            draw_point2d(img, points, color)
+
+    def test_draw_point2d_with_mismatched_dtype(self, device):
+        """Test that the color is correctly cast to the image dtype when drawing points."""
+        points = torch.tensor([(1, 3), (2, 4)], device=device)
+        color = torch.tensor([5, 10, 15], dtype=torch.float32, device=device)
+        img = torch.zeros(3, 8, 8, dtype=torch.uint8, device=device)
+        img = draw_point2d(img, points, color)
+        assert img.dtype is torch.uint8
+        for x, y in points:
+            assert_close(img[:, y, x], color.to(torch.uint8))
+
+    def test_draw_point2d_with_singleton_color_dims(self, dtype, device):
+        """Ensure that plotting behavior is consistent if we have a singleton dim for the color."""
+        points = torch.tensor([(1, 3), (2, 4)], device=device)
+        # Plot given a color tensor of shape [3]
+        color_vec = torch.tensor([5, 10, 15], dtype=torch.float32, device=device)
+        vec_img = torch.zeros(3, 8, 8, dtype=torch.uint8, device=device)
+        drawn_vec_img = draw_point2d(vec_img, points, color_vec)
+        # Plot given a color tensor of shape [3, 1]
+        color_mat = torch.unsqueeze(color_vec, dim=1)
+        mat_img = vec_img.clone()
+        drawn_mat_img = draw_point2d(mat_img, points, color_mat)
+        # Ensure that we get the same underlying image back
+        assert_close(drawn_vec_img, drawn_mat_img)
 
 
 class TestDrawLine:
@@ -69,9 +132,9 @@ class TestDrawLine:
             [
                 [
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 0.0],
                     [0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 0.0, 0.0],
                     [0.0, 0.0, 0.0, 0.0, 255.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 0.0, 255.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, 0.0, 255.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, 255.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 255.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -90,10 +153,10 @@ class TestDrawLine:
         img_mask = torch.tensor(
             [
                 [
-                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 255.0],
-                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 255.0],
                     [0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 0.0, 0.0],
-                    [0.0, 0.0, 0.0, 255.0, 255.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 255.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 255.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, 255.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 255.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -112,9 +175,9 @@ class TestDrawLine:
         img_mask = torch.tensor(
             [
                 [
-                    [255.0, 255.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 255.0, 255.0, 255.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 255.0, 0.0],
+                    [255.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 255.0, 255.0, 255.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 0.0, 255.0, 255.0, 255.0, 0.0],
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -139,7 +202,7 @@ class TestDrawLine:
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 255.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 255.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                    [0.0, 255.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, 255.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                     [0.0, 0.0, 0.0, 255.0, 0.0, 0.0, 0.0, 0.0],
                 ]
@@ -149,8 +212,32 @@ class TestDrawLine:
         )
         assert_close(img, img_mask)
 
+    def test_draw_lines_batched(self, dtype, device):
+        """Test drawing a line with m <= -1."""
+        img = torch.zeros(1, 8, 8, dtype=dtype, device=device)
+        img = draw_line(
+            img, torch.tensor([[0, 7], [0, 7], [0, 2]]), torch.tensor([[6, 0], [0, 0], [7, 7]]), torch.tensor([255])
+        )
+        img_mask = torch.tensor(
+            [
+                [
+                    [255.0, 0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 0.0],
+                    [255.0, 0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 0.0],
+                    [255.0, 0.0, 0.0, 0.0, 0.0, 255.0, 0.0, 0.0],
+                    [255.0, 255.0, 0.0, 0.0, 255.0, 0.0, 0.0, 0.0],
+                    [255.0, 0.0, 255.0, 255.0, 0.0, 0.0, 0.0, 0.0],
+                    [255.0, 0.0, 255.0, 255.0, 255.0, 0.0, 0.0, 0.0],
+                    [255.0, 255.0, 0.0, 0.0, 0.0, 255.0, 0.0, 0.0],
+                    [255.0, 0.0, 0.0, 0.0, 0.0, 0.0, 255.0, 255.0],
+                ]
+            ],
+            device=device,
+            dtype=dtype,
+        )
+        assert_close(img, img_mask)
+
     @pytest.mark.parametrize(
-        'p1', [torch.tensor([-1, 0]), torch.tensor([0, -1]), torch.tensor([8, 0]), torch.tensor([0, 8])]
+        "p1", [torch.tensor([-1, 0]), torch.tensor([0, -1]), torch.tensor([8, 0]), torch.tensor([0, 8])]
     )
     def test_p1_out_of_bounds(self, p1, dtype, device):
         """Tests that an exception is raised if p1 is out of bounds."""
@@ -158,10 +245,10 @@ class TestDrawLine:
         with pytest.raises(ValueError) as excinfo:
             draw_line(img, p1, torch.tensor([0, 0]), torch.tensor([255]))
 
-        assert 'p1 is out of bounds.' == str(excinfo.value)
+        assert "p1 is out of bounds." == str(excinfo.value)
 
     @pytest.mark.parametrize(
-        'p2', [torch.tensor([-1, 0]), torch.tensor([0, -1]), torch.tensor([8, 0]), torch.tensor([0, 8])]
+        "p2", [torch.tensor([-1, 0]), torch.tensor([0, -1]), torch.tensor([8, 0]), torch.tensor([0, 8])]
     )
     def test_p2_out_of_bounds(self, p2, dtype, device):
         """Tests that an exception is raised if p2 is out of bounds."""
@@ -169,44 +256,38 @@ class TestDrawLine:
         with pytest.raises(ValueError) as excinfo:
             draw_line(img, torch.tensor([0, 0]), p2, torch.tensor([255]))
 
-        assert 'p2 is out of bounds.' == str(excinfo.value)
+        assert "p2 is out of bounds." == str(excinfo.value)
 
-    @pytest.mark.parametrize('img_size', [(200, 100), (32, 3, 20, 20)])
+    @pytest.mark.parametrize("img_size", [(200, 100), (32, 3, 20, 20)])
     def test_image_size(self, img_size, dtype, device):
         img = torch.zeros(*img_size, dtype=dtype, device=device)
         with pytest.raises(ValueError) as excinfo:
             draw_line(img, torch.tensor([0, 0]), torch.tensor([1, 1]), torch.tensor([255]))
 
-        assert 'image must have 3 dimensions (C,H,W).' == str(excinfo.value)
+        assert "image must have 3 dimensions (C,H,W)." == str(excinfo.value)
 
-    @pytest.mark.parametrize('img_size,color', [((1, 8, 8), torch.tensor([23, 53])), ((3, 8, 8), torch.tensor([255]))])
+    @pytest.mark.parametrize("img_size,color", [((1, 8, 8), torch.tensor([23, 53])), ((3, 8, 8), torch.tensor([255]))])
     def test_color_image_channel_size(self, img_size, color, dtype, device):
         img = torch.zeros(*img_size, dtype=dtype, device=device)
         with pytest.raises(ValueError) as excinfo:
             draw_line(img, torch.tensor([0, 0]), torch.tensor([1, 1]), color)
 
-        assert 'color must have the same number of channels as the image.' == str(excinfo.value)
+        assert "color must have the same number of channels as the image." == str(excinfo.value)
 
-    @pytest.mark.parametrize(
-        'p1,p2',
-        [
-            ((0, 1), (1, 5, 2)),
-            ((0, 1, 2), (1, 5)),
-            (torch.tensor([0, 1]), torch.tensor([0, 2, 3])),
-            (torch.tensor([0, 1, 5]), torch.tensor([0, 2])),
-        ],
-    )
+    @pytest.mark.parametrize("p1,p2", [(torch.rand([10, 2]), torch.rand([20, 2])), (torch.rand([2]), torch.rand([3]))])
     def test_point_size(self, p1, p2, dtype, device):
         img = torch.zeros(1, 8, 8, dtype=dtype, device=device)
         with pytest.raises(ValueError) as excinfo:
             draw_line(img, p1, p2, torch.tensor([255]))
 
-        assert 'p1 and p2 must have length 2.' == str(excinfo.value)
+        assert "Input points must be 2D points with shape (2, ) or (B, 2) and must have the same batch sizes." == str(
+            excinfo.value
+        )
 
 
 class TestDrawRectangle:
-    @pytest.mark.parametrize('batch', (4, 17))
-    @pytest.mark.parametrize('color', (torch.Tensor([1.0]), torch.Tensor([0.5])))
+    @pytest.mark.parametrize("batch", (4, 17))
+    @pytest.mark.parametrize("color", (torch.Tensor([1.0]), torch.Tensor([0.5])))
     def test_smoke(self, device, batch, color):
         black_image = torch.zeros(batch, 1, 3, 3, device=device)  # 1 channel 3x3 black_image
         points = torch.tensor([1.0, 1.0, 1.0, 1.0]).to(device).expand(batch, 1, 4)  # single pixel rectangle
@@ -218,10 +299,10 @@ class TestDrawRectangle:
 
         assert torch.all(black_image == target)
 
-    @pytest.mark.parametrize('batch', (8, 11))
-    @pytest.mark.parametrize('fill', (True, False))
-    @pytest.mark.parametrize('height', (12, 106, 298))
-    @pytest.mark.parametrize('width', (7, 123, 537))
+    @pytest.mark.parametrize("batch", (8, 11))
+    @pytest.mark.parametrize("fill", (True, False))
+    @pytest.mark.parametrize("height", (12, 106, 298))
+    @pytest.mark.parametrize("width", (7, 123, 537))
     def test_fill_and_edges(self, device, batch, fill, height, width):
         black_image = torch.zeros(batch, 3, height, width, device=device)
         # we should pass height - 1 and width - 1 but rectangle should clip correctly
@@ -236,9 +317,9 @@ class TestDrawRectangle:
             # corners are double counted
             assert image_w_rectangle.sum() == batch * 3 * (2 * height + 2 * width - 4)
 
-    @pytest.mark.parametrize('batch', (4, 6))
-    @pytest.mark.parametrize('N', (5, 12))
-    @pytest.mark.parametrize('fill', (True, False))
+    @pytest.mark.parametrize("batch", (4, 6))
+    @pytest.mark.parametrize("N", (5, 12))
+    @pytest.mark.parametrize("fill", (True, False))
     def test_n_rectangles(self, device, batch, N, fill):
         points_list = []
         h, w = 20, 20
@@ -298,7 +379,7 @@ class TestDrawRectangle:
                         == (points_list[b][n][2] - points_list[b][n][0] + 1) * 3
                     )
 
-    @pytest.mark.parametrize('color', (torch.tensor([0.5, 0.3, 0.15]), torch.tensor([0.23, 0.33, 0.8])))
+    @pytest.mark.parametrize("color", (torch.tensor([0.5, 0.3, 0.15]), torch.tensor([0.23, 0.33, 0.8])))
     def test_color_background(self, device, color):
         image = torch.zeros(1, 3, 40, 40, device=device)
         image[:, 0, :, :] = color[0]
@@ -320,7 +401,7 @@ class TestDrawRectangle:
             <= 0.0001
         )
 
-    @pytest.mark.parametrize('color', (torch.tensor([0.34, 0.63, 0.16]), torch.tensor([0.29, 0.13, 0.48])))
+    @pytest.mark.parametrize("color", (torch.tensor([0.34, 0.63, 0.16]), torch.tensor([0.29, 0.13, 0.48])))
     def test_color_foreground(self, device, color):
         image = torch.zeros(1, 3, 50, 40, device=device)
         image_w_rectangle = image.clone()

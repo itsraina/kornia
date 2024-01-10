@@ -1,7 +1,7 @@
 import math
 
 import torch
-import torch.nn as nn
+from torch import nn
 
 from kornia.filters import filter2d
 from kornia.utils import create_meshgrid
@@ -54,7 +54,7 @@ def distance_transform(image: torch.Tensor, kernel_size: int = 3, h: float = 0.3
     signal_ones = torch.ones_like(boundary)
 
     for i in range(n_iters):
-        cdt = filter2d(boundary, kernel, border_type='replicate')
+        cdt = filter2d(boundary, kernel, border_type="replicate")
         cdt = -h * torch.log(cdt)
 
         # We are calculating log(0) above.
@@ -79,7 +79,7 @@ class DistanceTransform(nn.Module):
         h: value that influence the approximation of the min function.
     """
 
-    def __init__(self, kernel_size: int = 3, h: float = 0.35):
+    def __init__(self, kernel_size: int = 3, h: float = 0.35) -> None:
         super().__init__()
         self.kernel_size = kernel_size
         self.h = h

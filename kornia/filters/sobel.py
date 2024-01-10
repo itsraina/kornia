@@ -1,12 +1,15 @@
+from __future__ import annotations
+
 import torch
 import torch.nn.functional as F
 
 from kornia.core import Module, Tensor, pad
+from kornia.core.check import KORNIA_CHECK_IS_TENSOR, KORNIA_CHECK_SHAPE
 
 from .kernels import get_spatial_gradient_kernel2d, get_spatial_gradient_kernel3d, normalize_kernel2d
 
 
-def spatial_gradient(input: Tensor, mode: str = 'sobel', order: int = 1, normalized: bool = True) -> Tensor:
+def spatial_gradient(input: Tensor, mode: str = "sobel", order: int = 1, normalized: bool = True) -> Tensor:
     r"""Compute the first order image derivative in both x and y using a Sobel operator.
 
     .. image:: _static/img/spatial_gradient.png
@@ -21,8 +24,7 @@ def spatial_gradient(input: Tensor, mode: str = 'sobel', order: int = 1, normali
         the derivatives of the input feature map. with shape :math:`(B, C, 2, H, W)`.
 
     .. note::
-       See a working example `here <https://kornia-tutorials.readthedocs.io/en/latest/
-       filtering_edges.html>`__.
+       See a working example `here <https://kornia.github.io/tutorials/nbs/filtering_edges.html>`__.
 
     Examples:
         >>> input = torch.rand(1, 3, 4, 4)
@@ -30,30 +32,27 @@ def spatial_gradient(input: Tensor, mode: str = 'sobel', order: int = 1, normali
         >>> output.shape
         torch.Size([1, 3, 2, 4, 4])
     """
-    if not isinstance(input, Tensor):
-        raise TypeError(f"Input type is not a Tensor. Got {type(input)}")
+    KORNIA_CHECK_IS_TENSOR(input)
+    KORNIA_CHECK_SHAPE(input, ["B", "C", "H", "W"])
 
-    if not len(input.shape) == 4:
-        raise ValueError(f"Invalid input shape, we expect BxCxHxW. Got: {input.shape}")
     # allocate kernel
-    kernel: Tensor = get_spatial_gradient_kernel2d(mode, order)
+    kernel = get_spatial_gradient_kernel2d(mode, order, device=input.device, dtype=input.dtype)
     if normalized:
         kernel = normalize_kernel2d(kernel)
 
     # prepare kernel
     b, c, h, w = input.shape
-    tmp_kernel: Tensor = kernel.to(input).detach()
-    tmp_kernel = tmp_kernel.unsqueeze(1)
+    tmp_kernel = kernel[:, None, ...]
 
     # Pad with "replicate for spatial dims, but with zeros for channel
     spatial_pad = [kernel.size(1) // 2, kernel.size(1) // 2, kernel.size(2) // 2, kernel.size(2) // 2]
     out_channels: int = 3 if order == 2 else 2
-    padded_inp: Tensor = pad(input.reshape(b * c, 1, h, w), spatial_pad, 'replicate')
+    padded_inp: Tensor = pad(input.reshape(b * c, 1, h, w), spatial_pad, "replicate")
     out = F.conv2d(padded_inp, tmp_kernel, groups=1, padding=0, stride=1)
     return out.reshape(b, c, out_channels, h, w)
 
 
-def spatial_gradient3d(input: Tensor, mode: str = 'diff', order: int = 1) -> Tensor:
+def spatial_gradient3d(input: Tensor, mode: str = "diff", order: int = 1) -> Tensor:
     r"""Compute the first and second order volume derivative in x, y and d using a diff operator.
 
     Args:
@@ -71,17 +70,15 @@ def spatial_gradient3d(input: Tensor, mode: str = 'diff', order: int = 1) -> Ten
         >>> output.shape
         torch.Size([1, 4, 3, 2, 4, 4])
     """
-    if not isinstance(input, Tensor):
-        raise TypeError(f"Input type is not a Tensor. Got {type(input)}")
+    KORNIA_CHECK_IS_TENSOR(input)
+    KORNIA_CHECK_SHAPE(input, ["B", "C", "D", "H", "W"])
 
-    if not len(input.shape) == 5:
-        raise ValueError(f"Invalid input shape, we expect BxCxDxHxW. Got: {input.shape}")
     b, c, d, h, w = input.shape
     dev = input.device
     dtype = input.dtype
-    if (mode == 'diff') and (order == 1):
+    if (mode == "diff") and (order == 1):
         # we go for the special case implementation due to conv3d bad speed
-        x: Tensor = pad(input, 6 * [1], 'replicate')
+        x: Tensor = pad(input, 6 * [1], "replicate")
         center = slice(1, -1)
         left = slice(0, -2)
         right = slice(2, None)
@@ -93,13 +90,12 @@ def spatial_gradient3d(input: Tensor, mode: str = 'diff', order: int = 1) -> Ten
     else:
         # prepare kernel
         # allocate kernel
-        kernel: Tensor = get_spatial_gradient_kernel3d(mode, order)
+        kernel = get_spatial_gradient_kernel3d(mode, order, device=dev, dtype=dtype)
 
-        tmp_kernel: Tensor = kernel.to(input).detach()
-        tmp_kernel = tmp_kernel.repeat(c, 1, 1, 1, 1)
+        tmp_kernel = kernel.repeat(c, 1, 1, 1, 1)
 
         # convolve input tensor with grad kernel
-        kernel_flip: Tensor = tmp_kernel.flip(-3)
+        kernel_flip = tmp_kernel.flip(-3)
 
         # Pad with "replicate for spatial dims, but with zeros for channel
         spatial_pad = [
@@ -111,7 +107,7 @@ def spatial_gradient3d(input: Tensor, mode: str = 'diff', order: int = 1) -> Ten
             kernel.size(4) // 2,
         ]
         out_ch: int = 6 if order == 2 else 3
-        out = F.conv3d(pad(input, spatial_pad, 'replicate'), kernel_flip, padding=0, groups=c).view(
+        out = F.conv3d(pad(input, spatial_pad, "replicate"), kernel_flip, padding=0, groups=c).view(
             b, c, out_ch, d, h, w
         )
     return out
@@ -131,8 +127,7 @@ def sobel(input: Tensor, normalized: bool = True, eps: float = 1e-6) -> Tensor:
         the sobel edge gradient magnitudes map with shape :math:`(B,C,H,W)`.
 
     .. note::
-       See a working example `here <https://kornia-tutorials.readthedocs.io/en/latest/
-       filtering_edges.html>`__.
+       See a working example `here <https://kornia.github.io/tutorials/nbs/filtering_edges.html>`__.
 
     Example:
         >>> input = torch.rand(1, 3, 4, 4)
@@ -140,11 +135,8 @@ def sobel(input: Tensor, normalized: bool = True, eps: float = 1e-6) -> Tensor:
         >>> output.shape
         torch.Size([1, 3, 4, 4])
     """
-    if not isinstance(input, Tensor):
-        raise TypeError(f"Input type is not a Tensor. Got {type(input)}")
-
-    if not len(input.shape) == 4:
-        raise ValueError(f"Invalid input shape, we expect BxCxHxW. Got: {input.shape}")
+    KORNIA_CHECK_IS_TENSOR(input)
+    KORNIA_CHECK_SHAPE(input, ["B", "C", "H", "W"])
 
     # comput the x/y gradients
     edges: Tensor = spatial_gradient(input, normalized=normalized)
@@ -179,17 +171,14 @@ class SpatialGradient(Module):
         >>> output = SpatialGradient()(input)  # 1x3x2x4x4
     """
 
-    def __init__(self, mode: str = 'sobel', order: int = 1, normalized: bool = True) -> None:
+    def __init__(self, mode: str = "sobel", order: int = 1, normalized: bool = True) -> None:
         super().__init__()
         self.normalized: bool = normalized
         self.order: int = order
         self.mode: str = mode
 
     def __repr__(self) -> str:
-        return (
-            self.__class__.__name__ + '('
-            'order=' + str(self.order) + ', ' + 'normalized=' + str(self.normalized) + ', ' + 'mode=' + self.mode + ')'
-        )
+        return f"{self.__class__.__name__}(order={self.order}, normalized={self.normalized}, mode={self.mode})"
 
     def forward(self, input: Tensor) -> Tensor:
         return spatial_gradient(input, self.mode, self.order, self.normalized)
@@ -216,15 +205,14 @@ class SpatialGradient3d(Module):
         torch.Size([1, 4, 3, 2, 4, 4])
     """
 
-    def __init__(self, mode: str = 'diff', order: int = 1) -> None:
+    def __init__(self, mode: str = "diff", order: int = 1) -> None:
         super().__init__()
         self.order: int = order
         self.mode: str = mode
         self.kernel = get_spatial_gradient_kernel3d(mode, order)
-        return
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + '(' 'order=' + str(self.order) + ', ' + 'mode=' + self.mode + ')'
+        return f"{self.__class__.__name__}(order={self.order}, mode={self.mode})"
 
     def forward(self, input: Tensor) -> Tensor:
         return spatial_gradient3d(input, self.mode, self.order)
@@ -255,7 +243,7 @@ class Sobel(Module):
         self.eps: float = eps
 
     def __repr__(self) -> str:
-        return self.__class__.__name__ + '(' 'normalized=' + str(self.normalized) + ')'
+        return f"{self.__class__.__name__}(normalized={self.normalized})"
 
     def forward(self, input: Tensor) -> Tensor:
         return sobel(input, self.normalized, self.eps)

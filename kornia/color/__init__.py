@@ -1,9 +1,10 @@
+from .colormap import AUTUMN, ApplyColorMap, ColorMap, RGBColor, apply_colormap
 from .gray import BgrToGrayscale, GrayscaleToRgb, RgbToGrayscale, bgr_to_grayscale, grayscale_to_rgb, rgb_to_grayscale
 from .hls import HlsToRgb, RgbToHls, hls_to_rgb, rgb_to_hls
 from .hsv import HsvToRgb, RgbToHsv, hsv_to_rgb, rgb_to_hsv
 from .lab import LabToRgb, RgbToLab, lab_to_rgb, rgb_to_lab
 from .luv import LuvToRgb, RgbToLuv, luv_to_rgb, rgb_to_luv
-from .raw import CFA, RawToRgb, RgbToRaw, raw_to_rgb, rgb_to_raw
+from .raw import CFA, RawToRgb, RawToRgb2x2Downscaled, RgbToRaw, raw_to_rgb, raw_to_rgb_2x2_downscaled, rgb_to_raw
 from .rgb import (
     BgrToRgb,
     BgrToRgba,
@@ -89,8 +90,10 @@ __all__ = [
     "RgbToLab",
     "RgbToRaw",
     "RawToRgb",
+    "RawToRgb2x2Downscaled",
     "raw_to_rgb",
     "rgb_to_raw",
+    "raw_to_rgb_2x2_downscaled",
     "CFA",
     "GrayscaleToRgb",
     "luv_to_rgb",
@@ -107,6 +110,11 @@ __all__ = [
     "RgbToLinearRgb",
     "Sepia",
     "sepia",
+    "AUTUMN",
+    "ApplyColorMap",
+    "ColorMap",
+    "RGBColor",
+    "apply_colormap",
 ]
 
 sepia = sepia_from_rgb

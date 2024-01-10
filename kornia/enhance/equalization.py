@@ -46,10 +46,10 @@ def _compute_tiles(
 
     # add the padding in the last coluns and rows
     if pad_vert > batch.shape[-2] or pad_horz > batch.shape[-1]:
-        raise ValueError('Cannot compute tiles on the image according to the given grid size')
+        raise ValueError("Cannot compute tiles on the image according to the given grid size")
 
     if pad_vert > 0 or pad_horz > 0:
-        batch = F.pad(batch, [0, pad_horz, 0, pad_vert], mode='reflect')  # B x C x H' x W'
+        batch = F.pad(batch, [0, pad_horz, 0, pad_vert], mode="reflect")  # B x C x H' x W'
 
     # compute tiles
     c: int = batch.shape[-3]
@@ -297,10 +297,10 @@ def _compute_equalized_tiles(interp_tiles: torch.Tensor, luts: torch.Tensor) -> 
     tiles_equalized[:, 1:-1, gh - 1] = torch.addcmul(b, tih.squeeze(1), torch.sub(t, b))
 
     # border region (w)
-    l, r, _, _ = preinterp_tiles_equalized[:, 0, 1:-1].unbind(2)
-    tiles_equalized[:, 0, 1:-1] = torch.addcmul(r, tiw, torch.sub(l, r))
-    l, r, _, _ = preinterp_tiles_equalized[:, gw - 1, 1:-1].unbind(2)
-    tiles_equalized[:, gw - 1, 1:-1] = torch.addcmul(r, tiw, torch.sub(l, r))
+    left, right, _, _ = preinterp_tiles_equalized[:, 0, 1:-1].unbind(2)
+    tiles_equalized[:, 0, 1:-1] = torch.addcmul(right, tiw, torch.sub(left, right))
+    left, right, _, _ = preinterp_tiles_equalized[:, gw - 1, 1:-1].unbind(2)
+    tiles_equalized[:, gw - 1, 1:-1] = torch.addcmul(right, tiw, torch.sub(left, right))
 
     # same type as the input
     return tiles_equalized.div(255.0)
@@ -362,7 +362,9 @@ def equalize_clahe(
     hist_tiles, img_padded = _compute_tiles(imgs, grid_size, True)
     tile_size: Tuple[int, int] = (hist_tiles.shape[-2], hist_tiles.shape[-1])
     interp_tiles: torch.Tensor = _compute_interpolation_tiles(img_padded, tile_size)  # B x 2GH x 2GW x C x TH/2 x TW/2
-    luts: torch.Tensor = _compute_luts(hist_tiles, clip=clip_limit, diff=slow_and_differentiable)  # B x GH x GW x C x B
+    luts: torch.Tensor = _compute_luts(
+        hist_tiles, clip=clip_limit, diff=slow_and_differentiable
+    )  # B x GH x GW x C x 256
     equalized_tiles: torch.Tensor = _compute_equalized_tiles(interp_tiles, luts)  # B x 2GH x 2GW x C x TH/2 x TW/2
 
     # reconstruct the images form the tiles

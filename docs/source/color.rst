@@ -6,8 +6,7 @@ kornia.color
 The functions in this section perform various color space conversions.
 
 .. note::
-   Check a tutorial for color space conversions `here <https://kornia-tutorials.readthedocs.io/en/latest/
-   hello_world_tutorial.html>`__.
+   Check a tutorial for color space conversions `here <https://kornia.github.io/tutorials/nbs/hello_world_tutorial.html>`__.
 
 
 Grayscale
@@ -19,10 +18,14 @@ Grayscale
 .. autofunction:: rgb_to_grayscale
 .. autofunction:: bgr_to_grayscale
 .. autofunction:: grayscale_to_rgb
+.. autofunction:: apply_colormap
+    :noindex:
 
 .. autoclass:: GrayscaleToRgb
 .. autoclass:: RgbToGrayscale
 .. autoclass:: BgrToGrayscale
+.. autoclass:: ApplyColorMap
+    :noindex:
 
 RGB
 ---
@@ -184,12 +187,33 @@ Bayer RAW
 
 .. autofunction:: rgb_to_raw
 .. autofunction:: raw_to_rgb
+.. autofunction:: raw_to_rgb_2x2_downscaled
 
 .. autoclass:: RawToRgb
 .. autoclass:: RgbToRaw
+.. autoclass:: RawToRgb2x2Downscaled
 
 Sepia
 -----
 
 .. autoclass:: Sepia
 .. autofunction:: sepia
+
+
+Color Maps
+----------
+You can create your custom color map with
+
+.. autoclass:: ColorMap
+.. autoclass:: RGBColor
+
+
+Color maps availables:
+
+.. autoclass:: AUTUMN
+
+
+Functions and modules to use the color maps:
+
+.. autofunction:: apply_colormap
+.. autoclass:: ApplyColorMap

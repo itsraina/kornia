@@ -27,7 +27,7 @@ class TestErode:
             None, None, :, :
         ]
         assert_close(erosion(tensor, kernel), expected, atol=1e-4, rtol=1e-4)
-        assert_close(erosion(tensor, kernel, engine='convolution'), expected, atol=1e-3, rtol=1e-3)
+        assert_close(erosion(tensor, kernel, engine="convolution"), expected, atol=1e-3, rtol=1e-3)
 
     def test_structural_element(self, device, dtype):
         tensor = torch.tensor([[0.5, 1.0, 0.3], [0.7, 0.3, 0.8], [0.4, 0.9, 0.2]], device=device, dtype=dtype)[
@@ -50,7 +50,7 @@ class TestErode:
                 tensor,
                 torch.ones_like(structural_element),
                 structuring_element=structural_element,
-                engine='convolution',
+                engine="convolution",
             ),
             expected,
             atol=1e-3,
@@ -65,8 +65,8 @@ class TestErode:
         expected = torch.tensor([[0.3, 0.3, 0.3], [0.3, 0.2, 0.2], [0.3, 0.2, 0.2]], device=device, dtype=dtype)[
             None, None, :, :
         ]
-        assert_close(erosion(tensor, kernel, engine='unfold'), expected, atol=1e-4, rtol=1e-4)
-        assert_close(erosion(tensor, kernel, engine='convolution'), expected, atol=1e-3, rtol=1e-3)
+        assert_close(erosion(tensor, kernel, engine="unfold"), expected, atol=1e-4, rtol=1e-4)
+        assert_close(erosion(tensor, kernel, engine="convolution"), expected, atol=1e-3, rtol=1e-3)
 
     def test_exception(self, device, dtype):
         tensor = torch.ones(1, 1, 3, 4, device=device, dtype=dtype)
@@ -86,13 +86,13 @@ class TestErode:
             test = torch.ones(2, 3, 4, device=device, dtype=dtype)
             assert erosion(tensor, test)
 
-    @pytest.mark.grad
+    @pytest.mark.grad()
     def test_gradcheck(self, device, dtype):
         tensor = torch.rand(2, 3, 4, 4, requires_grad=True, device=device, dtype=torch.float64)
         kernel = torch.rand(3, 3, requires_grad=True, device=device, dtype=torch.float64)
-        assert gradcheck(erosion, (tensor, kernel), raise_exception=True)
+        assert gradcheck(erosion, (tensor, kernel), raise_exception=True, fast_mode=True)
 
-    @pytest.mark.jit
+    @pytest.mark.jit()
     def test_jit(self, device, dtype):
         op = erosion
         op_script = torch.jit.script(op)

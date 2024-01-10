@@ -1,7 +1,19 @@
-from .draw import draw_convex_polygon, draw_line, draw_rectangle
+from ._compat import torch_meshgrid
+from .draw import draw_convex_polygon, draw_line, draw_point2d, draw_rectangle
 from .grid import create_meshgrid, create_meshgrid3d
-from .helpers import _extract_device_dtype, get_cuda_device_if_available, safe_inverse_with_mask, safe_solve_with_mask
+from .helpers import (
+    _extract_device_dtype,
+    deprecated,
+    get_cuda_device_if_available,
+    get_cuda_or_mps_device_if_available,
+    get_mps_device_if_available,
+    is_autocast_enabled,
+    map_location_to_cpu,
+    safe_inverse_with_mask,
+    safe_solve_with_mask,
+)
 from .image import ImageToTensor, image_list_to_tensor, image_to_tensor, tensor_to_image
+from .image_print import image_to_string, print_image
 from .memory import batched_forward
 from .misc import eye_like, vec_like
 from .one_hot import one_hot
@@ -13,6 +25,8 @@ __all__ = [
     "create_meshgrid",
     "create_meshgrid3d",
     "get_cuda_device_if_available",
+    "get_mps_device_if_available",
+    "get_cuda_or_mps_device_if_available",
     "tensor_to_image",
     "image_to_tensor",
     "image_list_to_tensor",
@@ -21,10 +35,17 @@ __all__ = [
     "draw_convex_polygon",
     "draw_rectangle",
     "draw_line",
+    "draw_point2d",
     "_extract_device_dtype",
     "safe_inverse_with_mask",
     "safe_solve_with_mask",
     "ImageToTensor",
     "eye_like",
     "vec_like",
+    "torch_meshgrid",
+    "map_location_to_cpu",
+    "is_autocast_enabled",
+    "deprecated",
+    "image_to_string",
+    "print_image",
 ]

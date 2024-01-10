@@ -1,8 +1,9 @@
-import torch
-import torch.nn as nn
-from torch import Tensor
+from __future__ import annotations
 
-from kornia.testing import KORNIA_CHECK_SHAPE
+import torch
+from torch import Tensor, nn
+
+from kornia.core.check import KORNIA_CHECK_SHAPE
 
 # based on:
 # https://github.com/bermanmaxim/LovaszSoftmax
@@ -33,7 +34,7 @@ def lovasz_hinge_loss(pred: Tensor, target: Tensor) -> Tensor:
         [1] http://proceedings.mlr.press/v37/yub15.pdf
         [2] https://arxiv.org/pdf/1705.08790.pdf
 
-    . note::
+    .. note::
         This loss function only supports binary labels. For multi-class labels please
         use the Lovasz-Softmax loss.
 
@@ -54,9 +55,6 @@ def lovasz_hinge_loss(pred: Tensor, target: Tensor) -> Tensor:
     KORNIA_CHECK_SHAPE(pred, ["B", "1", "H", "W"])
 
     KORNIA_CHECK_SHAPE(target, ["B", "H", "W"])
-
-    if not pred.shape[1] == 1:
-        raise ValueError(f"Invalid pred shape, we expect Bx1xHxW. Got: {pred.shape}")
 
     if not pred.shape[-2:] == target.shape[-2:]:
         raise ValueError(f"pred and target shapes must be the same. Got: {pred.shape} and {target.shape}")
@@ -113,7 +111,7 @@ class LovaszHingeLoss(nn.Module):
         [1] http://proceedings.mlr.press/v37/yub15.pdf
         [2] https://arxiv.org/pdf/1705.08790.pdf
 
-    . note::
+    .. note::
         This loss function only supports binary labels. For multi-class labels please
         use the Lovasz-Softmax loss.
 

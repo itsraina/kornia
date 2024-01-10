@@ -1,10 +1,12 @@
 """Module containing RANSAC modules."""
 import math
-from typing import Optional, Tuple
+from functools import partial
+from typing import Callable, Optional, Tuple
 
 import torch
 
 from kornia.core import Device, Module, Tensor, zeros
+from kornia.core.check import KORNIA_CHECK_SHAPE
 from kornia.geometry import (
     find_fundamental,
     find_homography_dlt,
@@ -18,7 +20,6 @@ from kornia.geometry.homography import (
     oneway_transfer_error,
     sample_is_valid_for_homography,
 )
-from kornia.testing import KORNIA_CHECK_SHAPE
 
 __all__ = ["RANSAC"]
 
@@ -27,7 +28,8 @@ class RANSAC(Module):
     """Module for robust geometry estimation with RANSAC. https://en.wikipedia.org/wiki/Random_sample_consensus.
 
     Args:
-        model_type: type of model to estimate, e.g. "homography" or "fundamental".
+        model_type: type of model to estimate: "homography", "fundamental", "fundamental_7pt",
+            "homography_from_linesegments".
         inliers_threshold: threshold for the correspondence to be an inlier.
         batch_size: number of generated samples at once.
         max_iterations: maximum batches to generate. Actual number of models to try is ``batch_size * max_iterations``.
@@ -35,18 +37,17 @@ class RANSAC(Module):
         max_local_iterations: number of local optimization (polishing) iterations.
     """
 
-    supported_models = ['homography', 'fundamental', 'homography_from_linesegments']
-
     def __init__(
         self,
-        model_type: str = 'homography',
+        model_type: str = "homography",
         inl_th: float = 2.0,
         batch_size: int = 2048,
         max_iter: int = 10,
         confidence: float = 0.99,
         max_lo_iters: int = 5,
-    ):
+    ) -> None:
         super().__init__()
+        self.supported_models = ["homography", "fundamental", "fundamental_7pt", "homography_from_linesegments"]
         self.inl_th = inl_th
         self.max_iter = max_iter
         self.batch_size = batch_size
@@ -54,27 +55,35 @@ class RANSAC(Module):
         self.confidence = confidence
         self.max_lo_iters = max_lo_iters
         self.model_type = model_type
-        if model_type == 'homography':
+
+        self.error_fn: Callable[..., Tensor]
+        self.minimal_solver: Callable[..., Tensor]
+        self.polisher_solver: Callable[..., Tensor]
+
+        if model_type == "homography":
             self.error_fn = oneway_transfer_error
             self.minimal_solver = find_homography_dlt
             self.polisher_solver = find_homography_dlt_iterated
             self.minimal_sample_size = 4
-        elif model_type == 'homography_from_linesegments':
-            self.error_fn = line_segment_transfer_error_one_way  # type: ignore
-            self.minimal_solver = find_homography_lines_dlt  # type: ignore
-            self.polisher_solver = find_homography_lines_dlt_iterated  # type: ignore
+        elif model_type == "homography_from_linesegments":
+            self.error_fn = line_segment_transfer_error_one_way
+            self.minimal_solver = find_homography_lines_dlt
+            self.polisher_solver = find_homography_lines_dlt_iterated
             self.minimal_sample_size = 4
-        elif model_type == 'fundamental':
-            self.error_fn = symmetrical_epipolar_distance  # type: ignore
-            self.minimal_solver = find_fundamental  # type: ignore
+        elif model_type == "fundamental":
+            self.error_fn = symmetrical_epipolar_distance
+            self.minimal_solver = find_fundamental
             self.minimal_sample_size = 8
-            # ToDo: implement 7pt solver instead of 8pt minimal_solver
-            # https://github.com/opencv/opencv/blob/master/modules/calib3d/src/fundam.cpp#L498
-            self.polisher_solver = find_fundamental  # type: ignore
+            self.polisher_solver = find_fundamental
+        elif model_type == "fundamental_7pt":
+            self.error_fn = symmetrical_epipolar_distance
+            self.minimal_solver = partial(find_fundamental, method="7POINT")
+            self.minimal_sample_size = 7
+            self.polisher_solver = find_fundamental
         else:
             raise NotImplementedError(f"{model_type} is unknown. Try one of {self.supported_models}")
 
-    def sample(self, sample_size: int, pop_size: int, batch_size: int, device: Device = torch.device('cpu')) -> Tensor:
+    def sample(self, sample_size: int, pop_size: int, batch_size: int, device: Device = torch.device("cpu")) -> Tensor:
         """Minimal sampler, but unlike traditional RANSAC we sample in batches to get benefit of the parallel
         processing, esp.
 
@@ -88,9 +97,12 @@ class RANSAC(Module):
     def max_samples_by_conf(n_inl: int, num_tc: int, sample_size: int, conf: float) -> float:
         """Formula to update max_iter in order to stop iterations earlier
         https://en.wikipedia.org/wiki/Random_sample_consensus."""
+        eps = 1e-9
+        if num_tc <= sample_size:
+            return 1.0
         if n_inl == num_tc:
             return 1.0
-        return math.log(1.0 - conf) / math.log(1.0 - math.pow(n_inl / num_tc, sample_size))
+        return math.log(1.0 - conf) / max(eps, math.log(max(eps, 1.0 - math.pow(n_inl / num_tc, sample_size))))
 
     def estimate_model_from_minsample(self, kp1: Tensor, kp2: Tensor) -> Tensor:
         batch_size, sample_size = kp1.shape[:2]
@@ -103,7 +115,7 @@ class RANSAC(Module):
         if len(kp2.shape) == 2:
             kp2 = kp2[None]
         batch_size = models.shape[0]
-        if self.model_type == 'homography_from_linesegments':
+        if self.model_type == "homography_from_linesegments":
             errors = self.error_fn(kp1.expand(batch_size, -1, 2, 2), kp2.expand(batch_size, -1, 2, 2), models)
         else:
             errors = self.error_fn(kp1.expand(batch_size, -1, 2), kp2.expand(batch_size, -1, 2), models)
@@ -119,7 +131,7 @@ class RANSAC(Module):
         """"""
         # ToDo: add (model-specific) verification of the samples,
         # E.g. constraints on not to be a degenerate sample
-        if self.model_type == 'homography':
+        if self.model_type == "homography":
             mask = sample_is_valid_for_homography(kp1, kp2)
             return kp1[mask], kp2[mask]
         return kp1, kp2
@@ -142,23 +154,22 @@ class RANSAC(Module):
         return model
 
     def validate_inputs(self, kp1: Tensor, kp2: Tensor, weights: Optional[Tensor] = None) -> None:
-        if self.model_type in ['homography', 'fundamental']:
+        if self.model_type in ["homography", "fundamental"]:
             KORNIA_CHECK_SHAPE(kp1, ["N", "2"])
             KORNIA_CHECK_SHAPE(kp2, ["N", "2"])
             if not (kp1.shape[0] == kp2.shape[0]) or (kp1.shape[0] < self.minimal_sample_size):
                 raise ValueError(
-                    f"kp1 and kp2 should be \
-                                 equal shape at at least [{self.minimal_sample_size}, 2], \
-                                 got {kp1.shape}, {kp2.shape}"
+                    "kp1 and kp2 should be                                  equal shape at at least"
+                    f" [{self.minimal_sample_size}, 2],                                  got {kp1.shape}, {kp2.shape}"
                 )
-        if self.model_type == 'homography_from_linesegments':
+        if self.model_type == "homography_from_linesegments":
             KORNIA_CHECK_SHAPE(kp1, ["N", "2", "2"])
             KORNIA_CHECK_SHAPE(kp2, ["N", "2", "2"])
             if not (kp1.shape[0] == kp2.shape[0]) or (kp1.shape[0] < self.minimal_sample_size):
                 raise ValueError(
-                    f"kp1 and kp2 should be \
-                                 equal shape at at least [{self.minimal_sample_size}, 2, 2], \
-                                 got {kp1.shape}, {kp2.shape}"
+                    "kp1 and kp2 should be                                  equal shape at at least"
+                    f" [{self.minimal_sample_size}, 2, 2],                                  got {kp1.shape},"
+                    f" {kp2.shape}"
                 )
 
     def forward(self, kp1: Tensor, kp2: Tensor, weights: Optional[Tensor] = None) -> Tuple[Tensor, Tensor]:

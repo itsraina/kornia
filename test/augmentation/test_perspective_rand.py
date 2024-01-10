@@ -8,7 +8,6 @@ from kornia.testing import assert_close
 
 
 class TestRandomPerspective:
-
     torch.manual_seed(0)  # for random reproductibility
 
     def test_smoke_no_transform_float(self, device):
@@ -136,11 +135,11 @@ class TestRandomPerspective:
             kornia.augmentation.RandomPerspective(torch.tensor(0.5, device=device, dtype=dtype), p=0.0),
             (input,),
             raise_exception=True,
+            fast_mode=True,
         )
 
 
 class TestRandomAffine:
-
     torch.manual_seed(0)  # for random reproductibility
 
     def test_smoke_no_transform(self, device):
@@ -196,4 +195,24 @@ class TestRandomAffine:
         input = torch.rand(1, 2, 5, 7).to(device)
         input = utils.tensor_to_gradcheck_var(input)  # to var
         # TODO: turned off with p=0
-        assert gradcheck(kornia.augmentation.RandomAffine(10, p=0.0), (input,), raise_exception=True)
+        assert gradcheck(kornia.augmentation.RandomAffine(10, p=0.0), (input,), raise_exception=True, fast_mode=True)
+
+
+class TestRandomShear:
+    torch.manual_seed(0)  # for random reproductibility
+
+    def test_smoke_no_transform(self, device):
+        x_data = torch.rand(1, 2, 8, 9).to(device)
+        aug = kornia.augmentation.RandomShear((10.0, 10.0))
+        out = aug(x_data)
+        assert out.shape == x_data.shape
+        assert aug.inverse(out).shape == x_data.shape
+        assert aug.inverse(out, aug._params).shape == x_data.shape
+
+    def test_gradcheck(self, device):
+        input = torch.rand(1, 2, 5, 7).to(device)
+        input = utils.tensor_to_gradcheck_var(input)  # to var
+        # TODO: turned off with p=0
+        assert gradcheck(
+            kornia.augmentation.RandomShear((10.0, 10.0), p=1.0), (input,), raise_exception=True, fast_mode=True
+        )

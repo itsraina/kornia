@@ -30,14 +30,19 @@ Intensity
 .. autoclass:: RandomMotionBlur
 .. autoclass:: RandomPosterize
 .. autoclass:: RandomRGBShift
-.. autoclass:: RnadomSaturation
+.. autoclass:: RandomSaturation
 .. autoclass:: RandomSharpness
 .. autoclass:: RandomSolarize
+.. autoclass:: RandomMedianBlur
+.. autoclass:: RandomSnow
+.. autoclass:: RandomRain
+.. autoclass:: RandomClahe
 
 Geometric
 ~~~~~~~~~
 
 .. autoclass:: CenterCrop
+.. autoclass:: PadTo
 .. autoclass:: RandomAffine
 .. autoclass:: RandomCrop
 .. autoclass:: RandomErasing
@@ -58,6 +63,7 @@ Mix
 .. autoclass:: RandomMixUpV2
 .. autoclass:: RandomMosaic
 .. autoclass:: RandomJigsaw
+.. autoclass:: RandomTransplantation
 
 Transforms3D
 ------------
@@ -80,6 +86,11 @@ Intensity
 
 .. autoclass:: RandomMotionBlur3D
 .. autoclass:: RandomEqualize3D
+
+Mix
+~~~
+
+.. autoclass:: RandomTransplantation3D
 
 Normalizations
 --------------

@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import warnings
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
+
+from kornia.core import arange, ones_like, stack, where, zeros
 
 from .linalg import transform_points
 
@@ -19,7 +23,6 @@ __all__ = [
 ]
 
 
-@torch.jit.ignore
 def validate_bbox(boxes: torch.Tensor) -> bool:
     """Validate if a 2D bounding box usable or not. This function checks if the boxes are rectangular or not.
 
@@ -36,20 +39,19 @@ def validate_bbox(boxes: torch.Tensor) -> bool:
 
     if not torch.allclose((boxes[:, 1, 0] - boxes[:, 0, 0] + 1), (boxes[:, 2, 0] - boxes[:, 3, 0] + 1), atol=1e-4):
         raise ValueError(
-            "Boxes must have be rectangular, while get widths %s and %s"
-            % (str(boxes[:, 1, 0] - boxes[:, 0, 0] + 1), str(boxes[:, 2, 0] - boxes[:, 3, 0] + 1))
+            f"Boxes must have be rectangular, while get widths {boxes[:, 1, 0] - boxes[:, 0, 0] + 1!s}"
+            f" and {boxes[:, 2, 0] - boxes[:, 3, 0] + 1!s}"
         )
 
     if not torch.allclose((boxes[:, 2, 1] - boxes[:, 0, 1] + 1), (boxes[:, 3, 1] - boxes[:, 1, 1] + 1), atol=1e-4):
         raise ValueError(
-            "Boxes must have be rectangular, while get heights %s and %s"
-            % (str(boxes[:, 2, 1] - boxes[:, 0, 1] + 1), str(boxes[:, 3, 1] - boxes[:, 1, 1] + 1))
+            f"Boxes must be rectangular, while getting heights {boxes[:, 2, 1] - boxes[:, 0, 1] + 1!s}"
+            f" and {boxes[:, 3, 1] - boxes[:, 1, 1] + 1!s}"
         )
 
     return True
 
 
-@torch.jit.ignore
 def validate_bbox3d(boxes: torch.Tensor) -> bool:
     """Validate if a 3D bounding box usable or not. This function checks if the boxes are cube or not.
 
@@ -84,7 +86,7 @@ def validate_bbox3d(boxes: torch.Tensor) -> bool:
     return True
 
 
-def infer_bbox_shape(boxes: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+def infer_bbox_shape(boxes: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     r"""Auto-infer the output sizes for the given 2D bounding boxes.
 
     Args:
@@ -117,7 +119,7 @@ def infer_bbox_shape(boxes: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
     return height, width
 
 
-def infer_bbox_shape3d(boxes: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+def infer_bbox_shape3d(boxes: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     r"""Auto-infer the output sizes for the given 3D bounding boxes.
 
     Args:
@@ -196,8 +198,8 @@ def bbox_to_mask(boxes: torch.Tensor, width: int, height: int) -> torch.Tensor:
                  [0., 0., 0., 0., 0.]]])
     """
     validate_bbox(boxes)
-    # zero padding the surroudings
-    mask = torch.zeros((len(boxes), height + 2, width + 2), dtype=torch.float, device=boxes.device)
+    # zero padding the surroundings
+    mask = zeros((len(boxes), height + 2, width + 2), dtype=boxes.dtype, device=boxes.device)
     # push all points one pixel off
     # in order to zero-out the fully filled rows or columns
     box_i = (boxes + 1).long()
@@ -207,7 +209,7 @@ def bbox_to_mask(boxes: torch.Tensor, width: int, height: int) -> torch.Tensor:
     return mask[:, 1:-1, 1:-1]
 
 
-def bbox_to_mask3d(boxes: torch.Tensor, size: Tuple[int, int, int]) -> torch.Tensor:
+def bbox_to_mask3d(boxes: torch.Tensor, size: tuple[int, int, int]) -> torch.Tensor:
     """Convert 3D bounding boxes to masks. Covered area is 1. and the remaining is 0.
 
     Args:
@@ -257,34 +259,34 @@ def bbox_to_mask3d(boxes: torch.Tensor, size: Tuple[int, int, int]) -> torch.Ten
                    [0., 0., 0., 0., 0.]]]]])
     """
     validate_bbox3d(boxes)
-    mask = torch.zeros((len(boxes), *size))
+    mask = zeros((len(boxes), *size))
 
     mask_out = []
     # TODO: Looking for a vectorized way
     for m, box in zip(mask, boxes):
         m = m.index_fill(
             0,
-            torch.arange(box[0, 2].item(), box[4, 2].item() + 1, device=box.device, dtype=torch.long),
+            arange(box[0, 2].item(), box[4, 2].item() + 1, device=box.device, dtype=torch.long),
             torch.tensor(1, device=box.device, dtype=box.dtype),
         )
         m = m.index_fill(
             1,
-            torch.arange(box[1, 1].item(), box[2, 1].item() + 1, device=box.device, dtype=torch.long),
+            arange(box[1, 1].item(), box[2, 1].item() + 1, device=box.device, dtype=torch.long),
             torch.tensor(1, device=box.device, dtype=box.dtype),
         )
         m = m.index_fill(
             2,
-            torch.arange(box[0, 0].item(), box[1, 0].item() + 1, device=box.device, dtype=torch.long),
+            arange(box[0, 0].item(), box[1, 0].item() + 1, device=box.device, dtype=torch.long),
             torch.tensor(1, device=box.device, dtype=box.dtype),
         )
         m = m.unsqueeze(dim=0)
-        m_out = torch.ones_like(m)
+        m_out = ones_like(m)
         m_out = m_out * (m == 1).all(dim=2, keepdim=True).all(dim=1, keepdim=True)
         m_out = m_out * (m == 1).all(dim=3, keepdim=True).all(dim=1, keepdim=True)
         m_out = m_out * (m == 1).all(dim=2, keepdim=True).all(dim=3, keepdim=True)
         mask_out.append(m_out)
 
-    return torch.stack(mask_out, dim=0).float()
+    return stack(mask_out, dim=0).float()
 
 
 def bbox_generator(
@@ -491,7 +493,7 @@ def transform_bbox(
         restored_boxes[..., 3] = torch.max(transformed_boxes[..., [1, 3]], dim=-1)[0]
         transformed_boxes = restored_boxes
 
-    if mode == 'xywh':
+    if mode == "xywh":
         transformed_boxes[..., 2] = transformed_boxes[..., 2] - transformed_boxes[..., 0]
         transformed_boxes[..., 3] = transformed_boxes[..., 3] - transformed_boxes[..., 1]
 
@@ -548,9 +550,9 @@ def nms(boxes: torch.Tensor, scores: torch.Tensor, iou_threshold: float) -> torc
         inter = w * h
         ovr = inter / (areas[i] + areas[order[1:]] - inter)
 
-        inds = torch.where(ovr <= iou_threshold)[0]
+        inds = where(ovr <= iou_threshold)[0]
         order = order[inds + 1]
 
     if len(keep) > 0:
-        return torch.stack(keep)
+        return stack(keep)
     return torch.tensor(keep)

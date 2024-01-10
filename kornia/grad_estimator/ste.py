@@ -1,7 +1,6 @@
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
-import torch.nn as nn
-from torch import Tensor
+from torch import Tensor, nn
 from torch.autograd import Function
 
 __all__ = ["STEFunction", "StraightThroughEstimator"]
@@ -36,16 +35,14 @@ class STEFunction(Function):
     """
 
     @staticmethod
-    def forward(  # type:ignore
-        ctx, input: Tensor, output: Tensor, grad_fn: Optional[Callable] = None
-    ) -> Tensor:
+    def forward(ctx: Any, input: Tensor, output: Tensor, grad_fn: Optional[Callable[..., Any]] = None) -> Tensor:
         ctx.in_shape = input.shape
         ctx.out_shape = output.shape
         ctx.grad_fn = grad_fn
         return output
 
     @staticmethod
-    def backward(ctx, grad_output: Tensor) -> Tuple[Tensor, Tensor, None]:  # type:ignore
+    def backward(ctx: Any, grad_output: Tensor) -> Tuple[Tensor, Tensor, None]:  # type: ignore[override]
         if ctx.grad_fn is None:
             return grad_output.sum_to_size(ctx.in_shape), grad_output.sum_to_size(ctx.out_shape), None
         return (
@@ -105,12 +102,12 @@ class StraightThroughEstimator(nn.Module):
                   [0.0422, 0.0566, 0.0626, 0.0422]]]])
     """
 
-    def __init__(self, target_fn: nn.Module, grad_fn: Optional[Callable] = None):
+    def __init__(self, target_fn: nn.Module, grad_fn: Optional[Callable[..., Any]] = None) -> None:
         super().__init__()
         self.target_fn = target_fn
         self.grad_fn = grad_fn
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}(target_fn={self.target_fn}, grad_fn={self.grad_fn})"
 
     def forward(self, input: Tensor) -> Tensor:

@@ -8,6 +8,68 @@ import kornia.geometry.epipolar as epi
 from kornia.testing import assert_close
 
 
+class TestFindEssential:
+    def test_smoke(self, device, dtype):
+        points1 = torch.rand(1, 5, 2, device=device, dtype=dtype)
+        points2 = torch.rand(1, 5, 2, device=device, dtype=dtype)
+        weights = torch.ones(1, 5, device=device, dtype=dtype)
+        E_mat = epi.essential.find_essential(points1, points2, weights)
+        assert E_mat.shape == (1, 3, 3)
+
+    @pytest.mark.parametrize("batch_size, num_points", [(1, 5), (2, 6), (3, 7)])
+    def test_shape(self, batch_size, num_points, device, dtype):
+        B, N = batch_size, num_points
+        points1 = torch.rand(B, N, 2, device=device, dtype=dtype)
+        points2 = torch.rand(B, N, 2, device=device, dtype=dtype)
+        weights = torch.ones(B, N, device=device, dtype=dtype)
+        E_mat = epi.essential.find_essential(points1, points2, weights)
+        assert E_mat.shape == (B, 3, 3)
+
+    @pytest.mark.parametrize("batch_size, num_points", [(1, 5), (2, 6), (3, 7)])
+    def test_shape_noweights(self, batch_size, num_points, device, dtype):
+        B, N = batch_size, num_points
+        points1 = torch.rand(B, N, 2, device=device, dtype=dtype)
+        points2 = torch.rand(B, N, 2, device=device, dtype=dtype)
+        weights = None
+        E_mat = epi.essential.find_essential(points1, points2, weights)
+        assert E_mat.shape == (B, 3, 3)
+
+    def test_epipolar_constraint(self, device, dtype):
+        calibrated_x1 = torch.tensor(
+            [[[0.0640, 0.7799], [-0.2011, 0.2836], [-0.1355, 0.2907], [0.0520, 1.0086], [-0.0361, 0.6533]]],
+            device=device,
+            dtype=dtype,
+        )
+        calibrated_x2 = torch.tensor(
+            [[[0.3470, -0.4274], [-0.1818, -0.1281], [-0.1766, -0.1617], [0.4066, -0.0706], [0.1137, 0.0363]]],
+            device=device,
+            dtype=dtype,
+        )
+
+        E = epi.essential.find_essential(calibrated_x1, calibrated_x2)
+        if torch.all(E != 0):
+            distance = epi.symmetrical_epipolar_distance(calibrated_x1, calibrated_x2, E)
+            mean_error = distance.mean()
+            assert_close(mean_error, torch.tensor(0.0, device=device, dtype=dtype), atol=1e-4, rtol=1e-4)
+
+    def test_synthetic_sampson(self, device, dtype):
+        calibrated_x1 = torch.tensor(
+            [[[0.0640, 0.7799], [-0.2011, 0.2836], [-0.1355, 0.2907], [0.0520, 1.0086], [-0.0361, 0.6533]]],
+            device=device,
+            dtype=dtype,
+        )
+        calibrated_x2 = torch.tensor(
+            [[[0.3470, -0.4274], [-0.1818, -0.1281], [-0.1766, -0.1617], [0.4066, -0.0706], [0.1137, 0.0363]]],
+            device=device,
+            dtype=dtype,
+        )
+
+        weights = torch.ones_like(calibrated_x2)[..., 0]
+        E_est = epi.essential.find_essential(calibrated_x1, calibrated_x2, weights)
+        error = epi.sampson_epipolar_distance(calibrated_x1, calibrated_x2, E_est)
+        assert_close(error, torch.zeros((calibrated_x1.shape[:2]), device=device, dtype=dtype), atol=1e-4, rtol=1e-4)
+
+
 class TestEssentialFromFundamental:
     def test_smoke(self, device, dtype):
         F_mat = torch.rand(1, 3, 3, device=device, dtype=dtype)
@@ -42,13 +104,12 @@ class TestEssentialFromFundamental:
         assert E_mat.shape == (1, 2, 3, 3)
 
     def test_from_fundamental(self, device, dtype):
-
         scene = utils.generate_two_view_random_scene(device, dtype)
 
-        F_mat = scene['F']
+        F_mat = scene["F"]
 
-        K1 = scene['K1']
-        K2 = scene['K2']
+        K1 = scene["K1"]
+        K2 = scene["K2"]
 
         E_mat = epi.essential_from_fundamental(F_mat, K1, K2)
         F_hat = epi.fundamental_from_essential(E_mat, K1, K2)
@@ -61,7 +122,7 @@ class TestEssentialFromFundamental:
         F_mat = torch.rand(1, 3, 3, device=device, dtype=torch.float64, requires_grad=True)
         K1 = torch.rand(1, 3, 3, device=device, dtype=torch.float64)
         K2 = torch.rand(1, 3, 3, device=device, dtype=torch.float64)
-        assert gradcheck(epi.essential_from_fundamental, (F_mat, K1, K2), raise_exception=True)
+        assert gradcheck(epi.essential_from_fundamental, (F_mat, K1, K2), raise_exception=True, fast_mode=True)
 
 
 class TestRelativeCameraMotion:
@@ -120,7 +181,7 @@ class TestRelativeCameraMotion:
         R2 = torch.rand(1, 3, 3, device=device, dtype=torch.float64)
         t1 = torch.rand(1, 3, 1, device=device, dtype=torch.float64)
         t2 = torch.rand(1, 3, 1, device=device, dtype=torch.float64)
-        assert gradcheck(epi.relative_camera_motion, (R1, t1, R2, t2), raise_exception=True)
+        assert gradcheck(epi.relative_camera_motion, (R1, t1, R2, t2), raise_exception=True, fast_mode=True)
 
 
 class TestEssentalFromRt:
@@ -144,12 +205,11 @@ class TestEssentalFromRt:
 
     @pytest.mark.xfail(reason="TODO: fix #685")
     def test_from_fundamental_Rt(self, device, dtype):
-
         scene = utils.generate_two_view_random_scene(device, dtype)
 
-        E_from_Rt = epi.essential_from_Rt(scene['R1'], scene['t1'], scene['R2'], scene['t2'])
+        E_from_Rt = epi.essential_from_Rt(scene["R1"], scene["t1"], scene["R2"], scene["t2"])
 
-        E_from_F = epi.essential_from_fundamental(scene['F'], scene['K1'], scene['K2'])
+        E_from_F = epi.essential_from_fundamental(scene["F"], scene["K1"], scene["K2"])
 
         E_from_Rt_norm = epi.normalize_transformation(E_from_Rt)
         E_from_F_norm = epi.normalize_transformation(E_from_F)
@@ -161,7 +221,7 @@ class TestEssentalFromRt:
         R2 = torch.rand(1, 3, 3, device=device, dtype=torch.float64)
         t1 = torch.rand(1, 3, 1, device=device, dtype=torch.float64)
         t2 = torch.rand(1, 3, 1, device=device, dtype=torch.float64)
-        assert gradcheck(epi.essential_from_Rt, (R1, t1, R2, t2), raise_exception=True)
+        assert gradcheck(epi.essential_from_Rt, (R1, t1, R2, t2), raise_exception=True, fast_mode=True)
 
 
 class TestDecomposeEssentialMatrix:
@@ -192,9 +252,9 @@ class TestDecomposeEssentialMatrix:
         def eval_vec(input):
             return epi.decompose_essential_matrix(input)[2]
 
-        assert gradcheck(eval_rot1, (E_mat,), raise_exception=True)
-        assert gradcheck(eval_rot2, (E_mat,), raise_exception=True)
-        assert gradcheck(eval_vec, (E_mat,), raise_exception=True)
+        assert gradcheck(eval_rot1, (E_mat,), raise_exception=True, fast_mode=True)
+        assert gradcheck(eval_rot2, (E_mat,), raise_exception=True, fast_mode=True)
+        assert gradcheck(eval_vec, (E_mat,), raise_exception=True, fast_mode=True)
 
 
 class TestMotionFromEssential:
@@ -214,8 +274,8 @@ class TestMotionFromEssential:
     def test_two_view(self, device, dtype):
         scene = utils.generate_two_view_random_scene(device, dtype)
 
-        R1, t1 = scene['R1'], scene['t1']
-        R2, t2 = scene['R2'], scene['t2']
+        R1, t1 = scene["R1"], scene["t1"]
+        R2, t2 = scene["R2"], scene["t2"]
 
         E_mat = epi.essential_from_Rt(R1, t1, R2, t2)
 
@@ -239,8 +299,8 @@ class TestMotionFromEssential:
         def eval_vec(input):
             return epi.motion_from_essential(input)[1]
 
-        assert gradcheck(eval_rot, (E_mat,), raise_exception=True)
-        assert gradcheck(eval_vec, (E_mat,), raise_exception=True)
+        assert gradcheck(eval_rot, (E_mat,), raise_exception=True, fast_mode=True)
+        assert gradcheck(eval_vec, (E_mat,), raise_exception=True, fast_mode=True)
 
 
 class TestMotionFromEssentialChooseSolution:
@@ -308,16 +368,15 @@ class TestMotionFromEssentialChooseSolution:
         assert_close(X, Xm[1:-1, :])
 
     def test_two_view(self, device, dtype):
-
         scene = utils.generate_two_view_random_scene(device, dtype)
 
-        E_mat = epi.essential_from_Rt(scene['R1'], scene['t1'], scene['R2'], scene['t2'])
+        E_mat = epi.essential_from_Rt(scene["R1"], scene["t1"], scene["R2"], scene["t2"])
 
-        R, t = epi.relative_camera_motion(scene['R1'], scene['t1'], scene['R2'], scene['t2'])
+        R, t = epi.relative_camera_motion(scene["R1"], scene["t1"], scene["R2"], scene["t2"])
         t = torch.nn.functional.normalize(t, dim=1)
 
         R_hat, t_hat, _ = epi.motion_from_essential_choose_solution(
-            E_mat, scene['K1'], scene['K2'], scene['x1'], scene['x2']
+            E_mat, scene["K1"], scene["K2"], scene["x1"], scene["x2"]
         )
 
         assert_close(t, t_hat)
@@ -330,4 +389,6 @@ class TestMotionFromEssentialChooseSolution:
         x1 = torch.rand(1, 2, 2, device=device, dtype=torch.float64)
         x2 = torch.rand(1, 2, 2, device=device, dtype=torch.float64)
 
-        assert gradcheck(epi.motion_from_essential_choose_solution, (E_mat, K1, K2, x1, x2), raise_exception=True)
+        assert gradcheck(
+            epi.motion_from_essential_choose_solution, (E_mat, K1, K2, x1, x2), raise_exception=True, fast_mode=True
+        )

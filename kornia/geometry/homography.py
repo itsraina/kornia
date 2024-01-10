@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 import torch
 
 from kornia.core import Tensor
-from kornia.testing import KORNIA_CHECK_SHAPE
+from kornia.core.check import KORNIA_CHECK_SHAPE
 from kornia.utils import _extract_device_dtype, safe_inverse_with_mask, safe_solve_with_mask
 from kornia.utils.helpers import _torch_svd_cast
 
@@ -84,9 +84,10 @@ def symmetric_transfer_error(pts1: Tensor, pts2: Tensor, H: Tensor, squared: boo
 
 
 def line_segment_transfer_error_one_way(ls1: Tensor, ls2: Tensor, H: Tensor, squared: bool = False) -> Tensor:
-    r"""Return transfer error in image 2 for line segment correspondences given the homography matrix. Line segment
-    end points are reprojected into image 2, and point-to-line error is calculted w.r.t. line, induced by line
-    segment in image 2. See :cite:`homolines2001` for details.
+    r"""Return transfer error in image 2 for line segment correspondences given the homography matrix.
+
+    Line segment end points are reprojected into image 2, and point-to-line error is calculated w.r.t. line,
+    induced by line segment in image 2. See :cite:`homolines2001` for details.
 
     Args:
         ls1: line segment correspondences from the left images with shape
@@ -119,7 +120,7 @@ def line_segment_transfer_error_one_way(ls1: Tensor, ls2: Tensor, H: Tensor, squ
 
 
 def find_homography_dlt(
-    points1: torch.Tensor, points2: torch.Tensor, weights: Optional[torch.Tensor] = None, solver: str = 'lu'
+    points1: torch.Tensor, points2: torch.Tensor, weights: Optional[torch.Tensor] = None, solver: str = "lu"
 ) -> torch.Tensor:
     r"""Compute the homography matrix using the DLT formulation.
 
@@ -167,14 +168,14 @@ def find_homography_dlt(
         w_diag = torch.diag_embed(weights.unsqueeze(dim=-1).repeat(1, 1, 2).reshape(weights.shape[0], -1))
         A = A.transpose(-2, -1) @ w_diag @ A
 
-    if solver == 'svd':
+    if solver == "svd":
         try:
             _, _, V = _torch_svd_cast(A)
         except RuntimeError:
-            warnings.warn('SVD did not converge', RuntimeWarning)
+            warnings.warn("SVD did not converge", RuntimeWarning)
             return torch.empty((points1_norm.size(0), 3, 3), device=device, dtype=dtype)
         H = V[..., -1].view(-1, 3, 3)
-    elif solver == 'lu':
+    elif solver == "lu":
         B = torch.ones(A.shape[0], A.shape[1], device=device, dtype=dtype)
         sol, _, _ = safe_solve_with_mask(B, A)
         H = sol.reshape(-1, 3, 3)
@@ -245,14 +246,17 @@ def sample_is_valid_for_homography(points1: Tensor, points2: Tensor) -> Tensor:
 
 
 def find_homography_lines_dlt(ls1: Tensor, ls2: Tensor, weights: Optional[Tensor] = None) -> Tensor:
-    r"""Compute the homography matrix using the DLT formulation for line correspondences.
+    """Compute the homography matrix using the DLT formulation for line correspondences.
 
     See :cite:`homolines2001` for details.
+
     The linear system is solved by using the Weighted Least Squares Solution for the 4 Line correspondences algorithm.
+
     Args:
         ls1: A set of line segments in the first image with a tensor shape :math:`(B, N, 2, 2)`.
         ls2: A set of line segments in the second image with a tensor shape :math:`(B, N, 2, 2)`.
         weights: Tensor containing the weights per point correspondence with a shape of :math:`(B, N)`.
+
     Returns:
         the computed homography matrix with shape :math:`(B, 3, 3)`.
     """
@@ -302,7 +306,7 @@ def find_homography_lines_dlt(ls1: Tensor, ls2: Tensor, weights: Optional[Tensor
     try:
         _, _, V = torch.svd(A)
     except RuntimeError:
-        warnings.warn('SVD did not converge', RuntimeWarning)
+        warnings.warn("SVD did not converge", RuntimeWarning)
         return torch.empty((points1_norm.size(0), 3, 3), device=device, dtype=dtype)
 
     H = V[..., -1].view(-1, 3, 3)

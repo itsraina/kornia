@@ -15,7 +15,6 @@ class TestNormalize(BaseTester):
         assert str(kornia.enhance.Normalize(mean, std)) == repr
 
     def test_normalize(self, device, dtype):
-
         # prepare input data
         data = torch.ones(1, 2, 2, device=device, dtype=dtype)
         mean = torch.tensor([0.5], device=device, dtype=dtype)
@@ -28,7 +27,6 @@ class TestNormalize(BaseTester):
         self.assert_close(f(data), expected)
 
     def test_broadcast_normalize(self, device, dtype):
-
         # prepare input data
         data = torch.ones(2, 3, 1, 1, device=device, dtype=dtype)
         data += 2
@@ -42,8 +40,20 @@ class TestNormalize(BaseTester):
         f = kornia.enhance.Normalize(mean, std)
         self.assert_close(f(data), expected)
 
-    def test_float_input(self, device, dtype):
+    def test_int_input(self, device, dtype):
+        data = torch.ones(2, 3, 1, 1, device=device, dtype=dtype)
+        data += 2
 
+        mean: int = 2
+        std: int = 1
+
+        # expected output
+        expected = torch.ones_like(data)
+
+        f = kornia.enhance.Normalize(mean, std)
+        self.assert_close(f(data), expected)
+
+    def test_float_input(self, device, dtype):
         data = torch.ones(2, 3, 1, 1, device=device, dtype=dtype)
         data += 2
 
@@ -57,7 +67,6 @@ class TestNormalize(BaseTester):
         self.assert_close(f(data), expected)
 
     def test_batch_normalize(self, device, dtype):
-
         # prepare input data
         data = torch.ones(2, 3, 1, 1, device=device, dtype=dtype)
         data += 2
@@ -93,7 +102,7 @@ class TestNormalize(BaseTester):
         mean = utils.tensor_to_gradcheck_var(mean)  # to var
         std = utils.tensor_to_gradcheck_var(std)  # to var
 
-        assert gradcheck(kornia.enhance.Normalize(mean, std), (data,), raise_exception=True)
+        assert gradcheck(kornia.enhance.Normalize(mean, std), (data,), raise_exception=True, fast_mode=True)
 
     def test_single_value(self, device, dtype):
         # prepare input data
@@ -153,7 +162,6 @@ class TestDenormalize(BaseTester):
         assert str(kornia.enhance.Denormalize(mean, std)) == repr
 
     def test_denormalize(self, device, dtype):
-
         # prepare input data
         data = torch.ones(1, 2, 2, device=device, dtype=dtype)
         mean = torch.tensor([0.5])
@@ -166,7 +174,6 @@ class TestDenormalize(BaseTester):
         self.assert_close(f(data), expected)
 
     def test_broadcast_denormalize(self, device, dtype):
-
         # prepare input data
         data = torch.ones(2, 3, 1, 1, device=device, dtype=dtype)
         data += 2
@@ -181,7 +188,6 @@ class TestDenormalize(BaseTester):
         self.assert_close(f(data), expected)
 
     def test_float_input(self, device, dtype):
-
         data = torch.ones(2, 3, 1, 1, device=device, dtype=dtype)
         data += 2
 
@@ -195,7 +201,6 @@ class TestDenormalize(BaseTester):
         self.assert_close(f(data), expected)
 
     def test_batch_denormalize(self, device, dtype):
-
         # prepare input data
         data = torch.ones(2, 3, 1, 1, device=device, dtype=dtype)
         data += 2
@@ -222,7 +227,6 @@ class TestDenormalize(BaseTester):
         self.assert_close(op(*inputs), op_script(*inputs))
 
     def test_gradcheck(self, device, dtype):
-
         # prepare input data
         data = torch.ones(2, 3, 1, 1, device=device, dtype=dtype)
         data += 2
@@ -233,10 +237,9 @@ class TestDenormalize(BaseTester):
         mean = utils.tensor_to_gradcheck_var(mean)  # to var
         std = utils.tensor_to_gradcheck_var(std)  # to var
 
-        assert gradcheck(kornia.enhance.Denormalize(mean, std), (data,), raise_exception=True)
+        assert gradcheck(kornia.enhance.Denormalize(mean, std), (data,), raise_exception=True, fast_mode=True)
 
     def test_single_value(self, device, dtype):
-
         # prepare input data
         mean = torch.tensor(2, device=device, dtype=dtype)
         std = torch.tensor(3, device=device, dtype=dtype)
@@ -279,10 +282,10 @@ class TestNormalizeMinMax(BaseTester):
             assert kornia.enhance.normalize_min_max(0.0)
 
         with pytest.raises(TypeError):
-            assert kornia.enhance.normalize_min_max(x, '', '')
+            assert kornia.enhance.normalize_min_max(x, "", "")
 
         with pytest.raises(TypeError):
-            assert kornia.enhance.normalize_min_max(x, 2.0, '')
+            assert kornia.enhance.normalize_min_max(x, 2.0, "")
 
     @pytest.mark.parametrize("input_shape", [(1, 2, 3, 4), (2, 1, 4, 3), (1, 3, 2, 1)])
     def test_cardinality(self, device, dtype, input_shape):
@@ -306,17 +309,17 @@ class TestNormalizeMinMax(BaseTester):
         actual = kornia.enhance.normalize_min_max(x, min_val=-1.0, max_val=1.0)
         self.assert_close(actual, expected, low_tolerance=True)
 
-    @pytest.mark.jit
+    @pytest.mark.jit()
     def test_jit(self, device, dtype):
         x = torch.ones(1, 1, 1, 1, device=device, dtype=dtype)
         op = kornia.enhance.normalize_min_max
         op_jit = torch.jit.script(op)
         self.assert_close(op(x), op_jit(x))
 
-    @pytest.mark.grad
+    @pytest.mark.grad()
     def test_gradcheck(self, device, dtype):
         x = torch.ones(1, 1, 1, 1, device=device, dtype=torch.float64, requires_grad=True)
-        assert gradcheck(kornia.enhance.normalize_min_max, (x,), raise_exception=True)
+        assert gradcheck(kornia.enhance.normalize_min_max, (x,), raise_exception=True, fast_mode=True)
 
     @pytest.mark.skip(reason="not implemented yet")
     def test_module(self, device, dtype):

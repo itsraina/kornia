@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from typing import Optional
 
 import torch
 
 from kornia.color.rgb import bgr_to_rgb
 from kornia.core import Module, Tensor, concatenate
-from kornia.testing import KORNIA_CHECK_IS_TENSOR
+from kornia.core.check import KORNIA_CHECK_IS_TENSOR
 
 
 def grayscale_to_rgb(image: Tensor) -> Tensor:
@@ -15,7 +17,7 @@ def grayscale_to_rgb(image: Tensor) -> Tensor:
     The image data is assumed to be in the range of (0, 1).
 
     Args:
-        image: grayscale image to be converted to RGB with shape :math:`(*,1,H,W)`.
+        image: grayscale image tensor to be converted to RGB with shape :math:`(*,1,H,W)`.
 
     Returns:
         RGB version of the image with shape :math:`(*,3,H,W)`.
@@ -26,8 +28,8 @@ def grayscale_to_rgb(image: Tensor) -> Tensor:
     """
     KORNIA_CHECK_IS_TENSOR(image)
 
-    if image.dim() < 3 or image.size(-3) != 1:
-        raise ValueError(f"Input size must have a shape of (*, 1, H, W). " f"Got {image.shape}.")
+    if len(image.shape) < 3 or image.shape[-3] != 1:
+        raise ValueError(f"Input size must have a shape of (*, 1, H, W). Got {image.shape}.")
 
     return concatenate([image, image, image], -3)
 
@@ -47,8 +49,7 @@ def rgb_to_grayscale(image: Tensor, rgb_weights: Optional[Tensor] = None) -> Ten
         grayscale version of the image with shape :math:`(*,1,H,W)`.
 
     .. note::
-       See a working example `here <https://kornia-tutorials.readthedocs.io/en/latest/
-       color_conversions.html>`__.
+       See a working example `here <https://kornia.github.io/tutorials/nbs/color_conversions.html>`__.
 
     Example:
         >>> input = torch.rand(2, 3, 4, 5)
@@ -81,7 +82,7 @@ def rgb_to_grayscale(image: Tensor, rgb_weights: Optional[Tensor] = None) -> Ten
     return w_r * r + w_g * g + w_b * b
 
 
-def bgr_to_grayscale(image: torch.Tensor) -> torch.Tensor:
+def bgr_to_grayscale(image: Tensor) -> Tensor:
     r"""Convert a BGR image to grayscale.
 
     The image data is assumed to be in the range of (0, 1). First flips to RGB, then converts.
@@ -147,6 +148,8 @@ class RgbToGrayscale(Module):
 
     def __init__(self, rgb_weights: Optional[Tensor] = None) -> None:
         super().__init__()
+        if rgb_weights is None:
+            rgb_weights = Tensor([0.299, 0.587, 0.114])
         self.rgb_weights = rgb_weights
 
     def forward(self, image: Tensor) -> Tensor:

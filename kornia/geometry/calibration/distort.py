@@ -2,6 +2,8 @@ from typing import Optional
 
 import torch
 
+from kornia.core import cos, ones_like, sin, stack, zeros_like
+
 
 # Based on https://github.com/opencv/opencv/blob/master/modules/calib3d/src/distortion_model.hpp#L75
 def tilt_projection(taux: torch.Tensor, tauy: torch.Tensor, return_inverse: bool = False) -> torch.Tensor:
@@ -16,26 +18,26 @@ def tilt_projection(taux: torch.Tensor, tauy: torch.Tensor, return_inverse: bool
         torch.Tensor: Inverse tilt projection matrix with shape :math:`(*, 3, 3)`.
     """
     if taux.shape != tauy.shape:
-        raise ValueError(f'Shape of taux {taux.shape} and tauy {tauy.shape} do not match.')
+        raise ValueError(f"Shape of taux {taux.shape} and tauy {tauy.shape} do not match.")
 
     ndim: int = taux.dim()
     taux = taux.reshape(-1)
     tauy = tauy.reshape(-1)
 
-    cTx = torch.cos(taux)
-    sTx = torch.sin(taux)
-    cTy = torch.cos(tauy)
-    sTy = torch.sin(tauy)
-    zero = torch.zeros_like(cTx)
-    one = torch.ones_like(cTx)
+    cTx = cos(taux)
+    sTx = sin(taux)
+    cTy = cos(tauy)
+    sTy = sin(tauy)
+    zero = zeros_like(cTx)
+    one = ones_like(cTx)
 
-    Rx = torch.stack([one, zero, zero, zero, cTx, sTx, zero, -sTx, cTx], -1).reshape(-1, 3, 3)
-    Ry = torch.stack([cTy, zero, -sTy, zero, one, zero, sTy, zero, cTy], -1).reshape(-1, 3, 3)
+    Rx = stack([one, zero, zero, zero, cTx, sTx, zero, -sTx, cTx], -1).reshape(-1, 3, 3)
+    Ry = stack([cTy, zero, -sTy, zero, one, zero, sTy, zero, cTy], -1).reshape(-1, 3, 3)
     R = Ry @ Rx
 
     if return_inverse:
         invR22 = 1 / R[..., 2, 2]
-        invPz = torch.stack(
+        invPz = stack(
             [invR22, zero, R[..., 0, 2] * invR22, zero, invR22, R[..., 1, 2] * invR22, zero, zero, one], -1
         ).reshape(-1, 3, 3)
 
@@ -45,9 +47,9 @@ def tilt_projection(taux: torch.Tensor, tauy: torch.Tensor, return_inverse: bool
 
         return inv_tilt
 
-    Pz = torch.stack(
-        [R[..., 2, 2], zero, -R[..., 0, 2], zero, R[..., 2, 2], -R[..., 1, 2], zero, zero, one], -1
-    ).reshape(-1, 3, 3)
+    Pz = stack([R[..., 2, 2], zero, -R[..., 0, 2], zero, R[..., 2, 2], -R[..., 1, 2], zero, zero, one], -1).reshape(
+        -1, 3, 3
+    )
 
     tilt = Pz @ R.transpose(-1, -2)
     if ndim == 0:
@@ -84,18 +86,18 @@ def distort_points(
         >>> points_dist = distort_points(points, K, dist_coeff)
     """
     if points.dim() < 2 and points.shape[-1] != 2:
-        raise ValueError(f'points shape is invalid. Got {points.shape}.')
+        raise ValueError(f"points shape is invalid. Got {points.shape}.")
 
     if K.shape[-2:] != (3, 3):
-        raise ValueError(f'K matrix shape is invalid. Got {K.shape}.')
+        raise ValueError(f"K matrix shape is invalid. Got {K.shape}.")
 
     if new_K is None:
         new_K = K
     elif new_K.shape[-2:] != (3, 3):
-        raise ValueError(f'new_K matrix shape is invalid. Got {new_K.shape}.')
+        raise ValueError(f"new_K matrix shape is invalid. Got {new_K.shape}.")
 
     if dist.shape[-1] not in [4, 5, 8, 12, 14]:
-        raise ValueError(f'Invalid number of distortion coefficients. Got {dist.shape[-1]}')
+        raise ValueError(f"Invalid number of distortion coefficients. Got {dist.shape[-1]}")
 
     # Adding zeros to obtain vector with 14 coeffs.
     if dist.shape[-1] < 14:
@@ -137,7 +139,7 @@ def distort_points(
         tilt = tilt_projection(dist[..., 12], dist[..., 13])
 
         # Transposed untilt points (instead of [x,y,1]^T, we obtain [x,y,1])
-        points_untilt = torch.stack([xd, yd, torch.ones_like(xd)], -1) @ tilt.transpose(-2, -1)
+        points_untilt = stack([xd, yd, ones_like(xd)], -1) @ tilt.transpose(-2, -1)
         xd = points_untilt[..., 0] / points_untilt[..., 2]
         yd = points_untilt[..., 1] / points_untilt[..., 2]
 
@@ -150,4 +152,4 @@ def distort_points(
     x = fx * xd + cx
     y = fy * yd + cy
 
-    return torch.stack([x, y], -1)
+    return stack([x, y], -1)

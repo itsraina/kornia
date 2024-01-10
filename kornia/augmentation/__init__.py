@@ -1,3 +1,5 @@
+# Lazy loading auto module
+from kornia.augmentation import auto, container
 from kornia.augmentation._2d import (
     CenterCrop,
     ColorJiggle,
@@ -7,12 +9,13 @@ from kornia.augmentation._2d import (
     Normalize,
     PadTo,
     RandomAffine,
+    RandomAutoContrast,
     RandomBoxBlur,
     RandomBrightness,
     RandomChannelShuffle,
+    RandomClahe,
     RandomContrast,
     RandomCrop,
-    RandomCutMix,
     RandomCutMixV2,
     RandomElasticTransform,
     RandomEqualize,
@@ -26,7 +29,7 @@ from kornia.augmentation._2d import (
     RandomHue,
     RandomInvert,
     RandomJigsaw,
-    RandomMixUp,
+    RandomMedianBlur,
     RandomMixUpV2,
     RandomMosaic,
     RandomMotionBlur,
@@ -36,21 +39,26 @@ from kornia.augmentation._2d import (
     RandomPlasmaContrast,
     RandomPlasmaShadow,
     RandomPosterize,
+    RandomRain,
     RandomResizedCrop,
     RandomRGBShift,
     RandomRotation,
     RandomSaturation,
     RandomSharpness,
+    RandomShear,
+    RandomSnow,
     RandomSolarize,
     RandomThinPlateSpline,
+    RandomTranslate,
+    RandomTransplantation,
     RandomVerticalFlip,
     Resize,
     SmallestMaxSize,
 )
-from kornia.augmentation._2d.base import AugmentationBase2D
+from kornia.augmentation._2d.base import AugmentationBase2D, RigidAffineAugmentationBase2D
 from kornia.augmentation._2d.geometric.base import GeometricAugmentationBase2D
 from kornia.augmentation._2d.intensity.base import IntensityAugmentationBase2D
-from kornia.augmentation._2d.mix.base import MixAugmentationBase
+from kornia.augmentation._2d.mix.base import MixAugmentationBaseV2
 from kornia.augmentation._3d import (
     CenterCrop3D,
     RandomAffine3D,
@@ -61,9 +69,12 @@ from kornia.augmentation._3d import (
     RandomMotionBlur3D,
     RandomPerspective3D,
     RandomRotation3D,
+    RandomTransplantation3D,
     RandomVerticalFlip3D,
 )
-from kornia.augmentation._3d.base import AugmentationBase3D
+from kornia.augmentation._3d.base import AugmentationBase3D, RigidAffineAugmentationBase3D
+from kornia.augmentation._3d.geometric.base import GeometricAugmentationBase3D
+from kornia.augmentation._3d.intensity.base import IntensityAugmentationBase3D
 from kornia.augmentation.container import (
     AugmentationSequential,
     ImageSequential,
@@ -74,10 +85,13 @@ from kornia.augmentation.container import (
 )
 
 __all__ = [
+    "auto",
+    "container",
     "AugmentationBase2D",
+    "RigidAffineAugmentationBase2D",
     "GeometricAugmentationBase2D",
     "IntensityAugmentationBase2D",
-    "MixAugmentationBase",
+    "MixAugmentationBaseV2",
     "CenterCrop",
     "ColorJiggle",
     "ColorJitter",
@@ -86,7 +100,10 @@ __all__ = [
     "LongestMaxSize",
     "PadTo",
     "RandomAffine",
+    "RandomShear",
+    "RandomTranslate",
     "RandomBoxBlur",
+    "RandomMedianBlur",
     "RandomBrightness",
     "RandomChannelShuffle",
     "RandomContrast",
@@ -94,6 +111,7 @@ __all__ = [
     "RandomErasing",
     "RandomElasticTransform",
     "RandomFisheye",
+    "RandomAutoContrast",
     "RandomGamma",
     "RandomGrayscale",
     "RandomGaussianBlur",
@@ -112,6 +130,8 @@ __all__ = [
     "RandomSaturation",
     "RandomSolarize",
     "RandomSharpness",
+    "RandomSnow",
+    "RandomRain",
     "RandomPosterize",
     "RandomEqualize",
     "RandomMotionBlur",
@@ -124,6 +144,9 @@ __all__ = [
     "Resize",
     "SmallestMaxSize",
     "AugmentationBase3D",
+    "RigidAffineAugmentationBase3D",
+    "GeometricAugmentationBase3D",
+    "IntensityAugmentationBase3D",
     "CenterCrop3D",
     "RandomAffine3D",
     "RandomCrop3D",

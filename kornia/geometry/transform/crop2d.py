@@ -15,8 +15,8 @@ def crop_and_resize(
     input_tensor: Tensor,
     boxes: Tensor,
     size: Tuple[int, int],
-    mode: str = 'bilinear',
-    padding_mode: str = 'zeros',
+    mode: str = "bilinear",
+    padding_mode: str = "zeros",
     align_corners: bool = True,
 ) -> Tensor:
     r"""Extract crops from 2D images (4D tensor) and resize given a bounding box.
@@ -88,8 +88,8 @@ def crop_and_resize(
 def center_crop(
     input_tensor: Tensor,
     size: Tuple[int, int],
-    mode: str = 'bilinear',
-    padding_mode: str = 'zeros',
+    mode: str = "bilinear",
+    padding_mode: str = "zeros",
     align_corners: bool = True,
 ) -> Tensor:
     r"""Crop the 2D images (4D tensor) from the center.
@@ -166,8 +166,8 @@ def crop_by_boxes(
     input_tensor: Tensor,
     src_box: Tensor,
     dst_box: Tensor,
-    mode: str = 'bilinear',
-    padding_mode: str = 'zeros',
+    mode: str = "bilinear",
+    padding_mode: str = "zeros",
     align_corners: bool = True,
     validate_boxes: bool = True,
 ) -> Tensor:
@@ -232,8 +232,7 @@ def crop_by_boxes(
     bbox: Tuple[Tensor, Tensor] = infer_bbox_shape(dst_box)
     if not ((bbox[0] == bbox[0][0]).all() and (bbox[1] == bbox[1][0]).all()):
         raise AssertionError(
-            f"Cropping height, width and depth must be exact same in a batch. "
-            f"Got height {bbox[0]} and width {bbox[1]}."
+            f"Cropping height, width and depth must be exact same in a batch. Got height {bbox[0]} and width {bbox[1]}."
         )
 
     h_out: int = int(bbox[0][0].item())
@@ -248,8 +247,8 @@ def crop_by_transform_mat(
     input_tensor: Tensor,
     transform: Tensor,
     out_size: Tuple[int, int],
-    mode: str = 'bilinear',
-    padding_mode: str = 'zeros',
+    mode: str = "bilinear",
+    padding_mode: str = "zeros",
     align_corners: bool = True,
 ) -> Tensor:
     """Perform crop transform on 2D images (4D tensor) given a perspective transformation matrix.
@@ -287,8 +286,8 @@ def crop_by_transform_mat(
 def crop_by_indices(
     input_tensor: Tensor,
     src_box: Tensor,
-    size: Optional[Tuple] = None,
-    interpolation: str = 'bilinear',
+    size: Optional[Tuple[int, int]] = None,
+    interpolation: str = "bilinear",
     align_corners: Optional[bool] = None,
     antialias: bool = False,
     shape_compensation: str = "resize",
@@ -325,7 +324,7 @@ def crop_by_indices(
         == len(y2.unique(sorted=False))
         == 1
     ):
-        out = input_tensor[..., y1[0] : y2[0], x1[0] : x2[0]]  # type: ignore[misc]
+        out = input_tensor[..., int(y1[0]) : int(y2[0]), int(x1[0]) : int(x2[0])]
         if size is not None and out.shape[-2:] != size:
             return resize(
                 out, size, interpolation=interpolation, align_corners=align_corners, side="short", antialias=antialias
@@ -337,7 +336,7 @@ def crop_by_indices(
     out = torch.empty(B, C, *size, device=input_tensor.device, dtype=input_tensor.dtype)
     # Find out the cropped shapes that need to be resized.
     for i, _ in enumerate(out):
-        _out = input_tensor[i : i + 1, :, y1[i] : y2[i], x1[i] : x2[i]]  # type: ignore[misc]
+        _out = input_tensor[i : i + 1, :, int(y1[i]) : int(y2[i]), int(x1[i]) : int(x2[i])]
         if _out.shape[-2:] != size:
             if shape_compensation == "resize":
                 out[i] = resize(

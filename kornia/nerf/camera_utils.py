@@ -3,9 +3,9 @@ from typing import List, Tuple, Union
 
 import torch
 
-from kornia.core import Device, Tensor
+from kornia.core import Device, Tensor, cos, sin, stack
 from kornia.geometry.camera import PinholeCamera
-from kornia.geometry.conversions import QuaternionCoeffOrder, quaternion_to_rotation_matrix
+from kornia.geometry.conversions import quaternion_to_rotation_matrix
 
 
 def parse_colmap_output(
@@ -29,16 +29,16 @@ def parse_colmap_output(
 
     class CameraParams:
         def __init__(self, line: str) -> None:
-            split_line = line.split(' ')
+            split_line = line.split(" ")
             model = split_line[1]
-            if model == 'SIMPLE_PINHOLE':
+            if model == "SIMPLE_PINHOLE":
                 self._width = int(split_line[2])
                 self._height = int(split_line[3])
                 self._fx = float(split_line[4])
                 self._fy = self._fx
                 self._cx = int(split_line[5])
                 self._cy = int(split_line[6])
-            elif model == 'PINHOLE':
+            elif model == "PINHOLE":
                 self._width = int(split_line[2])
                 self._height = int(split_line[3])
                 self._fx = float(split_line[4])
@@ -48,7 +48,7 @@ def parse_colmap_output(
 
     cameras_params: List[CameraParams] = []
     for line in lines:
-        if line.startswith('#'):
+        if line.startswith("#"):
             continue
         camera_params = CameraParams(line)
         cameras_params.append(camera_params)
@@ -62,13 +62,13 @@ def parse_colmap_output(
     widths: List[int] = []
     img_names: List[str] = []
     for line in lines:
-        if line.startswith('#'):
+        if line.startswith("#"):
             continue
 
         # Read line with camera quaternion
         line = line.strip()
-        if line.endswith('png') or line.endswith('jpg\n'):
-            split_line = line.split(' ')
+        if line.endswith(("jpg", "png")):
+            split_line = line.split(" ")
             qw = float(split_line[1])
             qx = float(split_line[2])
             qy = float(split_line[3])
@@ -94,7 +94,7 @@ def parse_colmap_output(
 
             # Extrinsic
             q = torch.tensor([qw, qx, qy, qz], device=device)
-            R = quaternion_to_rotation_matrix(q, order=QuaternionCoeffOrder.WXYZ)
+            R = quaternion_to_rotation_matrix(q)
             t = torch.tensor([tx, ty, tz], device=device)
             extrinsic = torch.eye(4, device=device, dtype=dtype)
             extrinsic[:3, :3] = R
@@ -138,15 +138,14 @@ def create_spiral_path(cameras: PinholeCamera, rad: float, num_views: int, num_c
         num_views: Number of created cameras: int
         num_circles: Number of spiral circles: int
     """
-
     # Average locations over all cameras
     mean_center = cameras.translation_vector.mean(0, False).squeeze(-1)
     device = cameras.intrinsics.device
     t = torch.linspace(0, 2 * math.pi * num_circles, num_views, device=device)
-    cos_t = torch.cos(t) * rad
-    sin_t = -torch.sin(t) * rad
-    sin_05t = -torch.sin(0.5 * t) * rad
-    translation_vector = torch.unsqueeze(mean_center, dim=0) + torch.stack((cos_t, sin_t, sin_05t)).permute((1, 0))
+    cos_t = cos(t) * rad
+    sin_t = -sin(t) * rad
+    sin_05t = -sin(0.5 * t) * rad
+    translation_vector = torch.unsqueeze(mean_center, dim=0) + stack((cos_t, sin_t, sin_05t)).permute((1, 0))
     mean_intrinsics = cameras.intrinsics.mean(0, True).repeat(num_views, 1, 1)
     mean_extrinsics = cameras.extrinsics.mean(0, True).repeat(num_views, 1, 1)
     extrinsics = mean_extrinsics

@@ -1,15 +1,17 @@
 import pytest
 import torch
 
+from kornia.geometry.conversions import euler_from_quaternion
 from kornia.geometry.liegroup import So3
 from kornia.geometry.quaternion import Quaternion
+from kornia.geometry.vector import Vector3
 from kornia.testing import BaseTester
 
 
 class TestSo3(BaseTester):
     def _make_rand_data(self, device, dtype, batch_size, dims):
         shape = [] if batch_size is None else [batch_size]
-        return torch.rand(shape + [dims], device=device, dtype=dtype)
+        return torch.rand([*shape, dims], device=device, dtype=dtype)
 
     def test_smoke(self, device, dtype):
         q = Quaternion.from_coeffs(1.0, 0.0, 0.0, 0.0)
@@ -52,13 +54,28 @@ class TestSo3(BaseTester):
         s = So3(q)
         for i in range(batch_size):
             s1 = s[i]
-            self.assert_close(s1.q.data[0], q.data[i])
+            self.assert_close(s1.q.data, q.data[i])
 
     @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
     def test_mul(self, device, dtype, batch_size):
         q1 = Quaternion.identity(batch_size, device, dtype)
         q2 = Quaternion.random(batch_size, device, dtype)
         t = self._make_rand_data(device, dtype, batch_size, dims=3)
+        s1 = So3(q1)
+        s2 = So3(q2)
+        self.assert_close((s1 * s2).q.data, s2.q.data)
+        self.assert_close((s2 * s2.inverse()).q.data, s1.q.data)
+        self.assert_close((s1 * t), t)
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_mul_vec(self, device, dtype, batch_size):
+        q1 = Quaternion.identity(batch_size, device, dtype)
+        q2 = Quaternion.random(batch_size, device, dtype)
+        if batch_size is None:
+            shape = ()
+        else:
+            shape = (batch_size,)
+        t = Vector3.random(shape, device, dtype)
         s1 = So3(q1)
         s2 = So3(q2)
         self.assert_close((s1 * s2).q.data, s2.q.data)
@@ -80,9 +97,6 @@ class TestSo3(BaseTester):
         if batch_size is None:
             self.assert_close(s1.q.norm(), ones_vec)
             return
-
-        if batch_size is not None:
-            ones_vec = ones_vec[None]
 
         for i in range(batch_size):
             self.assert_close(s1[i].q.norm(), ones_vec)
@@ -152,11 +166,17 @@ class TestSo3(BaseTester):
             q1 = q[i]
             r1 = r[i, :, :]
             pvec = torch.rand(3, device=device, dtype=dtype)
-            pquat = Quaternion(torch.cat([torch.tensor([0]).to(device, dtype), pvec])[None, :])
+            pquat = Quaternion(torch.cat([torch.tensor([0], device=device, dtype=dtype), pvec]))
             qp_ = q1 * pquat * q1.inv()
-            rp_ = torch.matmul(r1, pvec)[None, :]
+            rp_ = torch.matmul(r1, pvec)
             self.assert_close(rp_, qp_.vec)  # p_ = R*p = q*p*q_inv
             self.assert_close(rp_.norm(), pvec.norm())
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_from_wxyz(self, device, dtype, batch_size):
+        wxyz = self._make_rand_data(device, dtype, batch_size, dims=4)
+        s = So3.from_wxyz(wxyz)
+        self.assert_close(s.q.data, wxyz)
 
     @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
     def test_ortho(self, device, dtype, batch_size):
@@ -186,3 +206,63 @@ class TestSo3(BaseTester):
         q = Quaternion.random(batch_size, device, dtype)
         self.assert_close(So3(q).inverse().inverse().q.data, q.data)
         self.assert_close(So3(q).inverse().inverse().matrix(), So3(q).matrix())
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_rot_x(self, device, dtype, batch_size):
+        x = self._make_rand_data(device, dtype, batch_size, dims=1).squeeze(-1)
+        so3 = So3.rot_x(x)
+        roll, _, _ = euler_from_quaternion(*so3.q.coeffs)
+        self.assert_close(x, roll)
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_rot_y(self, device, dtype, batch_size):
+        y = self._make_rand_data(device, dtype, batch_size, dims=1).squeeze(-1)
+        so3 = So3.rot_y(y)
+        _, pitch, _ = euler_from_quaternion(*so3.q.coeffs)
+        self.assert_close(y, pitch)
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_rot_z(self, device, dtype, batch_size):
+        z = self._make_rand_data(device, dtype, batch_size, dims=1).squeeze(-1)
+        so3 = So3.rot_z(z)
+        _, _, yaw = euler_from_quaternion(*so3.q.coeffs)
+        self.assert_close(z, yaw)
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_adjoint(self, device, dtype, batch_size):
+        q1 = Quaternion.random(batch_size, device, dtype)
+        q2 = Quaternion.random(batch_size, device, dtype)
+        x = So3(q1)
+        y = So3(q2)
+        self.assert_close(x.inverse().adjoint(), x.adjoint().inverse())
+        self.assert_close((x * y).adjoint(), x.adjoint() @ y.adjoint())
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_random(self, device, dtype, batch_size):
+        s = So3.random(batch_size=batch_size, device=device, dtype=dtype)
+        s_in_s = s.inverse() * s
+        i = So3.identity(batch_size=batch_size, device=device, dtype=dtype)
+        self.assert_close(s_in_s.q.data, i.q.data)
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_right_jacobian(self, device, dtype, batch_size):
+        vec = self._make_rand_data(device, dtype, batch_size, dims=3)
+        Jr = So3.right_jacobian(vec)
+        I = torch.eye(3, device=device, dtype=dtype).expand_as(Jr)  # noqa: E741
+        self.assert_close(vec[..., None], Jr @ vec[..., None])
+        self.assert_close(Jr.transpose(-1, -2) @ Jr, I, atol=0.1, rtol=0.1)
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_left_jacobian(self, device, dtype, batch_size):
+        vec = self._make_rand_data(device, dtype, batch_size, dims=3)
+        Jl = So3.left_jacobian(vec)
+        I = torch.eye(3, device=device, dtype=dtype).expand_as(Jl)  # noqa: E741
+        self.assert_close(vec[..., None], Jl @ vec[..., None])
+        self.assert_close(Jl.transpose(-1, -2) @ Jl, I, atol=0.1, rtol=0.1)
+
+    @pytest.mark.parametrize("batch_size", (None, 1, 2, 5))
+    def test_right_left_jacobian(self, device, dtype, batch_size):
+        vec = self._make_rand_data(device, dtype, batch_size, dims=3)
+        Jr = So3.right_jacobian(vec)
+        Jl = So3.left_jacobian(vec)
+        self.assert_close(Jl, Jr.transpose(-1, -2))

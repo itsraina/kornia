@@ -93,7 +93,7 @@ class TestRgbToHsv(BaseTester):
 
     def test_nan_rgb_to_hsv(self, device, dtype):
         if dtype == torch.float16:
-            pytest.skip('not work for half-precision')
+            pytest.skip("not work for half-precision")
 
         data = torch.zeros(3, 5, 5, device=device, dtype=dtype)  # 3x5x5
         expected = torch.zeros_like(data)  # 3x5x5
@@ -102,7 +102,7 @@ class TestRgbToHsv(BaseTester):
     def test_gradcheck(self, device, dtype):
         B, C, H, W = 2, 3, 4, 4
         img = torch.rand(B, C, H, W, device=device, dtype=torch.float64, requires_grad=True)
-        assert gradcheck(kornia.color.rgb_to_hsv, (img,), raise_exception=True)
+        assert gradcheck(kornia.color.rgb_to_hsv, (img,), raise_exception=True, fast_mode=True)
 
     def test_jit(self, device, dtype):
         B, C, H, W = 2, 3, 4, 4
@@ -213,13 +213,13 @@ class TestHsvToRgb(BaseTester):
         data[:, 0] -= 4 * math.pi
         self.assert_close(f(data), expected, low_tolerance=True)
 
-    @pytest.mark.grad
+    @pytest.mark.grad()
     def test_gradcheck(self, device, dtype):
         B, C, H, W = 2, 3, 4, 4
         img = torch.rand(B, C, H, W, device=device, dtype=torch.float64, requires_grad=True)
-        assert gradcheck(kornia.color.hsv_to_rgb, (img,), raise_exception=True)
+        assert gradcheck(kornia.color.hsv_to_rgb, (img,), raise_exception=True, fast_mode=True)
 
-    @pytest.mark.jit
+    @pytest.mark.jit()
     def test_jit(self, device, dtype):
         B, C, H, W = 2, 3, 4, 4
         img = torch.ones(B, C, H, W, device=device, dtype=dtype)

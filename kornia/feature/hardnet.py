@@ -1,17 +1,19 @@
-from typing import Callable, Dict
+from typing import Dict
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 
-from kornia.testing import KORNIA_CHECK_SHAPE, is_mps_tensor_safe
+from kornia.core.check import KORNIA_CHECK_SHAPE
+from kornia.testing import is_mps_tensor_safe
+from kornia.utils.helpers import map_location_to_cpu
 
 urls: Dict[str, str] = {}
 urls["hardnet++"] = "https://github.com/DagnyT/hardnet/raw/master/pretrained/pretrained_all_datasets/HardNet++.pth"
 urls[
     "liberty_aug"
-] = "https://github.com/DagnyT/hardnet/raw/master/pretrained/train_liberty_with_aug/checkpoint_liberty_with_aug.pth"  # noqa pylint: disable
-urls["hardnet8v2"] = "http://cmp.felk.cvut.cz/~mishkdmy/hardnet8v2.pt"  # pylint: disable
+] = "https://github.com/DagnyT/hardnet/raw/master/pretrained/train_liberty_with_aug/checkpoint_liberty_with_aug.pth"
+urls["hardnet8v2"] = "http://cmp.felk.cvut.cz/~mishkdmy/hardnet8v2.pt"
 
 
 class HardNet(nn.Module):
@@ -35,6 +37,7 @@ class HardNet(nn.Module):
         >>> hardnet = HardNet()
         >>> descs = hardnet(input) # 16x128
     """
+
     patch_size = 32
 
     def __init__(self, pretrained: bool = False) -> None:
@@ -65,9 +68,8 @@ class HardNet(nn.Module):
 
         # use torch.hub to load pretrained model
         if pretrained:
-            storage_fcn: Callable = lambda storage, loc: storage
-            pretrained_dict = torch.hub.load_state_dict_from_url(urls['liberty_aug'], map_location=storage_fcn)
-            self.load_state_dict(pretrained_dict['state_dict'], strict=True)
+            pretrained_dict = torch.hub.load_state_dict_from_url(urls["liberty_aug"], map_location=map_location_to_cpu)
+            self.load_state_dict(pretrained_dict["state_dict"], strict=True)
         self.eval()
 
     @staticmethod
@@ -112,9 +114,10 @@ class HardNet8(nn.Module):
         >>> hardnet = HardNet8()
         >>> descs = hardnet(input) # 16x128
     """
+
     patch_size = 32
 
-    def __init__(self, pretrained: bool = False):
+    def __init__(self, pretrained: bool = False) -> None:
         super().__init__()
         self.features = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3, padding=1, bias=False),
@@ -143,18 +146,17 @@ class HardNet8(nn.Module):
             nn.BatchNorm2d(512, affine=False),
         )
         self.features.apply(self.weights_init)
-        self.register_buffer('components', torch.ones(512, 128, dtype=torch.float))
-        self.register_buffer('mean', torch.zeros(512, dtype=torch.float))
+        self.register_buffer("components", torch.ones(512, 128, dtype=torch.float))
+        self.register_buffer("mean", torch.zeros(512, dtype=torch.float))
 
         # use torch.hub to load pretrained model
         if pretrained:
-            storage_fcn: Callable = lambda storage, loc: storage
-            pretrained_dict = torch.hub.load_state_dict_from_url(urls['hardnet8v2'], map_location=storage_fcn)
+            pretrained_dict = torch.hub.load_state_dict_from_url(urls["hardnet8v2"], map_location=map_location_to_cpu)
             self.load_state_dict(pretrained_dict, strict=True)
         self.eval()
 
     @staticmethod
-    def weights_init(m):
+    def weights_init(m: object) -> None:
         if isinstance(m, nn.Conv2d):
             nn.init.orthogonal_(m.weight.data, gain=0.6)
             if m.bias is not None:

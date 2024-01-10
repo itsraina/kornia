@@ -1,10 +1,10 @@
 import logging
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 # the accelerator library is a requirement for the Trainer
 # but it is optional for grousnd base user of kornia.
 import torch
-import torch.nn as nn
+from torch.optim import Optimizer, lr_scheduler
 from torch.utils.data import DataLoader
 
 try:
@@ -12,6 +12,7 @@ try:
 except ImportError:
     Accelerator = None
 
+from kornia.core import Module, Tensor
 from kornia.metrics import AverageMeter
 
 from .utils import Configuration, StatsTracker, TrainerState
@@ -61,14 +62,14 @@ class Trainer:
 
     def __init__(
         self,
-        model: nn.Module,
-        train_dataloader: DataLoader,
-        valid_dataloader: DataLoader,
-        criterion: Optional[nn.Module],
-        optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler.CosineAnnealingLR,
+        model: Module,
+        train_dataloader: DataLoader[Any],
+        valid_dataloader: DataLoader[Any],
+        criterion: Optional[Module],
+        optimizer: Optimizer,
+        scheduler: lr_scheduler._LRScheduler,
         config: Configuration,
-        callbacks: Dict[str, Callable] = {},
+        callbacks: Dict[str, Callable[..., None]] = {},
     ) -> None:
         # setup the accelerator
         if Accelerator is None:
@@ -95,13 +96,13 @@ class Trainer:
 
         self.state = TrainerState.STARTING
 
-        self._logger = logging.getLogger('train')
+        self._logger = logging.getLogger("train")
 
     @property
     def device(self) -> torch.device:
         return self.accelerator.device
 
-    def backward(self, loss: torch.Tensor) -> None:
+    def backward(self, loss: Tensor) -> None:
         self.accelerator.backward(loss)
 
     def fit_epoch(self, epoch: int) -> None:
@@ -159,7 +160,7 @@ class Trainer:
     # events stubs
 
     @torch.no_grad()
-    def evaluate(self) -> dict:
+    def evaluate(self) -> Dict[str, AverageMeter]:
         self.model.eval()
         stats = StatsTracker()
         for sample_id, sample in enumerate(self.valid_dataloader):
@@ -176,43 +177,43 @@ class Trainer:
             # Loss computation
             if self.criterion is not None:
                 val_loss = self.compute_loss(out, sample["target"])
-                stats.update('losses', val_loss.item(), batch_size)
-            stats.update_from_dict(self.compute_metrics(out, sample['target']), batch_size)
+                stats.update("losses", val_loss.item(), batch_size)
+            stats.update_from_dict(self.compute_metrics(out, sample["target"]), batch_size)
 
             if sample_id % 10 == 0:
                 self._logger.info(f"Test: {sample_id}/{len(self.valid_dataloader)} {stats}")
 
         return stats.as_dict()
 
-    def on_epoch_start(self, *args, **kwargs):
+    def on_epoch_start(self, *args: Any, **kwargs: Any) -> None:
         ...
 
-    def preprocess(self, x: dict) -> dict:
+    def preprocess(self, x: Dict[str, Tensor]) -> Dict[str, Tensor]:
         return x
 
-    def augmentations(self, x: dict) -> dict:
+    def augmentations(self, x: Dict[str, Tensor]) -> Dict[str, Tensor]:
         return x
 
-    def compute_metrics(self, *args: torch.Tensor) -> Dict[str, float]:
+    def compute_metrics(self, *args: Any) -> Dict[str, float]:
         """Compute metrics during the evaluation."""
         return {}
 
-    def compute_loss(self, *args: torch.Tensor) -> torch.Tensor:
+    def compute_loss(self, *args: Tensor) -> Tensor:
         if self.criterion is None:
             raise RuntimeError("`criterion` should not be None.")
         return self.criterion(*args)
 
-    def on_before_model(self, x: dict) -> dict:
+    def on_before_model(self, x: Dict[str, Tensor]) -> Dict[str, Tensor]:
         return x
 
-    def on_model(self, model, sample: dict):
+    def on_model(self, model: Module, sample: Dict[str, Tensor]) -> Tensor:
         return model(sample["input"])
 
-    def on_after_model(self, output: torch.Tensor, sample: dict):
+    def on_after_model(self, output: Tensor, sample: Dict[str, Tensor]) -> None:
         ...
 
-    def on_checkpoint(self, *args, **kwargs):
+    def on_checkpoint(self, *args: Any, **kwargs: Dict[str, Any]) -> None:
         ...
 
-    def on_epoch_end(self, *args, **kwargs):
+    def on_epoch_end(self, *args: Any, **kwargs: Dict[str, Any]) -> None:
         ...

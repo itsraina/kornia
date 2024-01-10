@@ -1,10 +1,9 @@
-from typing import Any, Dict, Optional, Tuple, cast
-
-from torch import Tensor
+from typing import Any, Dict, Optional, Tuple
 
 from kornia.augmentation import random_generator as rg
 from kornia.augmentation._2d.intensity.base import IntensityAugmentationBase2D
 from kornia.augmentation.utils import _range_bound
+from kornia.core import Tensor
 from kornia.enhance.adjust import adjust_brightness
 
 
@@ -13,7 +12,7 @@ class RandomBrightness(IntensityAugmentationBase2D):
 
     This implementation aligns PIL. Hence, the output is close to TorchVision.
 
-    .. image:: _static/img/RandomBrighness.png
+    .. image:: _static/img/RandomBrightness.png
 
     Args:
         p: probability of applying the transformation.
@@ -30,7 +29,7 @@ class RandomBrightness(IntensityAugmentationBase2D):
     .. note::
         This function internally uses :func:`kornia.enhance.adjust_brightness`
 
-        Examples:
+    Examples:
         >>> rng = torch.manual_seed(0)
         >>> inputs = torch.rand(1, 3, 3, 3)
         >>> aug = RandomBrightness(brightness = (0.5,2.),p=1.)
@@ -48,6 +47,7 @@ class RandomBrightness(IntensityAugmentationBase2D):
                   [0.0000, 0.1072, 0.5070]]]])
 
     To apply the exact augmenation again, you may take the advantage of the previous parameter state:
+
         >>> input = torch.rand(1, 3, 32, 32)
         >>> aug = RandomBrightness((0.8,1.2), p=1.)
         >>> (aug(input) == aug(input, params=aug._params)).all()
@@ -61,13 +61,11 @@ class RandomBrightness(IntensityAugmentationBase2D):
         same_on_batch: bool = False,
         p: float = 1.0,
         keepdim: bool = False,
-        return_transform: Optional[bool] = None,
     ) -> None:
-        super().__init__(p=p, return_transform=return_transform, same_on_batch=same_on_batch, keepdim=keepdim)
-        self.brightness: Tensor = _range_bound(brightness, 'brightness', center=1.0, bounds=(0.0, 2.0))
-        self._param_generator = cast(
-            rg.PlainUniformGenerator, rg.PlainUniformGenerator((self.brightness, "brightness_factor", None, None))
-        )
+        super().__init__(p=p, same_on_batch=same_on_batch, keepdim=keepdim)
+        self.brightness: Tensor = _range_bound(brightness, "brightness", center=1.0, bounds=(0.0, 2.0))
+        self._param_generator = rg.PlainUniformGenerator((self.brightness, "brightness_factor", None, None))
+
         self.clip_output = clip_output
 
     def apply_transform(

@@ -1,18 +1,13 @@
-from typing import Dict, Optional, Tuple, Union, cast
+from typing import Dict, Optional, Tuple, Union
 
 import torch
-from torch.distributions import Uniform
 
-from kornia.augmentation.random_generator.base import RandomGeneratorBase
-from kornia.augmentation.utils import (
-    _adapted_rsampling,
-    _adapted_uniform,
-    _common_param_check,
-    _joint_range_check,
-    _range_bound,
-)
-from kornia.core import Device, Tensor, as_tensor, concatenate, stack, tensor, zeros
-from kornia.utils.helpers import _deprecated, _extract_device_dtype
+from kornia.augmentation.random_generator.base import RandomGeneratorBase, UniformDistribution
+from kornia.augmentation.utils import _adapted_rsampling, _common_param_check, _joint_range_check, _range_bound
+from kornia.core import Tensor, as_tensor, concatenate, stack, tensor, zeros
+from kornia.utils.helpers import _extract_device_dtype
+
+__all__ = ["AffineGenerator"]
 
 
 class AffineGenerator(RandomGeneratorBase):
@@ -40,8 +35,8 @@ class AffineGenerator(RandomGeneratorBase):
             - center (Tensor): element-wise center with a shape of (B, 2).
             - scale (Tensor): element-wise scales with a shape of (B, 2).
             - angle (Tensor): element-wise rotation angles with a shape of (B,).
-            - sx (Tensor): element-wise x-axis shears with a shape of (B,).
-            - sy (Tensor): element-wise y-axis shears with a shape of (B,).
+            - shear_x (Tensor): element-wise x-axis shears with a shape of (B,).
+            - shear_y (Tensor): element-wise y-axis shears with a shape of (B,).
 
     Note:
         The generated random numbers are not reproducible across different devices and dtypes. By default,
@@ -67,27 +62,25 @@ class AffineGenerator(RandomGeneratorBase):
         return repr
 
     def make_samplers(self, device: torch.device, dtype: torch.dtype) -> None:
-        _degrees = _range_bound(self.degrees, 'degrees', 0, (-360, 360)).to(device=device, dtype=dtype)
+        _degrees = _range_bound(self.degrees, "degrees", 0, (-360, 360)).to(device=device, dtype=dtype)
         _translate = (
             self.translate
             if self.translate is None
-            else _range_bound(self.translate, 'translate', bounds=(0, 1), check='singular').to(
+            else _range_bound(self.translate, "translate", bounds=(0, 1), check="singular").to(
                 device=device, dtype=dtype
             )
         )
         _scale: Optional[Tensor] = None
         if self.scale is not None:
             if len(self.scale) == 2:
-                _scale = _range_bound(self.scale[:2], 'scale', bounds=(0, float('inf')), check='singular').to(
+                _scale = _range_bound(self.scale[:2], "scale", bounds=(0, float("inf")), check="singular").to(
                     device=device, dtype=dtype
                 )
             elif len(self.scale) == 4:
                 _scale = concatenate(
                     [
-                        _range_bound(self.scale[:2], 'scale_x', bounds=(0, float('inf')), check='singular'),
-                        _range_bound(
-                            self.scale[2:], 'scale_y', bounds=(0, float('inf')), check='singular'  # type:ignore
-                        ),
+                        _range_bound(self.scale[:2], "scale_x", bounds=(0, float("inf")), check="singular"),
+                        _range_bound(self.scale[-2:], "scale_y", bounds=(0, float("inf")), check="singular"),
                     ]
                 ).to(device=device, dtype=dtype)
             else:
@@ -100,38 +93,40 @@ class AffineGenerator(RandomGeneratorBase):
             else:
                 _shear = stack(
                     [
-                        _range_bound(shear if shear.dim() == 0 else shear[:2], 'shear-x', 0, (-360, 360)),
-                        tensor([0, 0], device=device, dtype=dtype)
-                        if shear.dim() == 0 or len(shear) == 2
-                        else _range_bound(shear[2:], 'shear-y', 0, (-360, 360)),
+                        _range_bound(shear if shear.dim() == 0 else shear[:2], "shear-x", 0, (-360, 360)),
+                        (
+                            tensor([0, 0], device=device, dtype=dtype)
+                            if shear.dim() == 0 or len(shear) == 2
+                            else _range_bound(shear[2:], "shear-y", 0, (-360, 360))
+                        ),
                     ]
                 )
 
-        translate_x_sampler: Optional[Uniform] = None
-        translate_y_sampler: Optional[Uniform] = None
-        scale_2_sampler: Optional[Uniform] = None
-        scale_4_sampler: Optional[Uniform] = None
-        shear_x_sampler: Optional[Uniform] = None
-        shear_y_sampler: Optional[Uniform] = None
+        translate_x_sampler: Optional[UniformDistribution] = None
+        translate_y_sampler: Optional[UniformDistribution] = None
+        scale_2_sampler: Optional[UniformDistribution] = None
+        scale_4_sampler: Optional[UniformDistribution] = None
+        shear_x_sampler: Optional[UniformDistribution] = None
+        shear_y_sampler: Optional[UniformDistribution] = None
 
         if _translate is not None:
-            translate_x_sampler = Uniform(-_translate[0], _translate[0], validate_args=False)
-            translate_y_sampler = Uniform(-_translate[1], _translate[1], validate_args=False)
+            translate_x_sampler = UniformDistribution(-_translate[0], _translate[0], validate_args=False)
+            translate_y_sampler = UniformDistribution(-_translate[1], _translate[1], validate_args=False)
         if _scale is not None:
             if len(_scale) == 2:
-                scale_2_sampler = Uniform(_scale[0], _scale[1], validate_args=False)
+                scale_2_sampler = UniformDistribution(_scale[0], _scale[1], validate_args=False)
             elif len(_scale) == 4:
-                scale_2_sampler = Uniform(_scale[0], _scale[1], validate_args=False)
-                scale_4_sampler = Uniform(_scale[2], _scale[3], validate_args=False)
+                scale_2_sampler = UniformDistribution(_scale[0], _scale[1], validate_args=False)
+                scale_4_sampler = UniformDistribution(_scale[2], _scale[3], validate_args=False)
             else:
                 raise ValueError(f"'scale' expected to be either 2 or 4 elements. Got {self.scale}")
         if _shear is not None:
-            _joint_range_check(cast(Tensor, _shear)[0], "shear")
-            _joint_range_check(cast(Tensor, _shear)[1], "shear")
-            shear_x_sampler = Uniform(_shear[0][0], _shear[0][1], validate_args=False)
-            shear_y_sampler = Uniform(_shear[1][0], _shear[1][1], validate_args=False)
+            _joint_range_check(_shear[0], "shear")
+            _joint_range_check(_shear[1], "shear")
+            shear_x_sampler = UniformDistribution(_shear[0][0], _shear[0][1], validate_args=False)
+            shear_y_sampler = UniformDistribution(_shear[1][0], _shear[1][1], validate_args=False)
 
-        self.degree_sampler = Uniform(_degrees[0], _degrees[1], validate_args=False)
+        self.degree_sampler = UniformDistribution(_degrees[0], _degrees[1], validate_args=False)
         self.translate_x_sampler = translate_x_sampler
         self.translate_y_sampler = translate_y_sampler
         self.scale_2_sampler = scale_2_sampler
@@ -139,7 +134,7 @@ class AffineGenerator(RandomGeneratorBase):
         self.shear_x_sampler = shear_x_sampler
         self.shear_y_sampler = shear_y_sampler
 
-    def forward(self, batch_shape: torch.Size, same_on_batch: bool = False) -> Dict[str, Tensor]:
+    def forward(self, batch_shape: Tuple[int, ...], same_on_batch: bool = False) -> Dict[str, Tensor]:
         batch_size = batch_shape[0]
         height = batch_shape[-2]
         width = batch_shape[-1]
@@ -181,109 +176,14 @@ class AffineGenerator(RandomGeneratorBase):
             sx = sx.to(device=_device, dtype=_dtype)
             sy = sy.to(device=_device, dtype=_dtype)
         else:
-            sx = sy = tensor([0] * batch_size, device=_device, dtype=_dtype)
+            sx = tensor([0] * batch_size, device=_device, dtype=_dtype)
+            sy = tensor([0] * batch_size, device=_device, dtype=_dtype)
 
-        return dict(translations=translations, center=center, scale=_scale, angle=angle, sx=sx, sy=sy)
-
-
-@_deprecated(replace_with=AffineGenerator.__name__)
-def random_affine_generator(
-    batch_size: int,
-    height: int,
-    width: int,
-    degrees: Tensor,
-    translate: Optional[Tensor] = None,
-    scale: Optional[Tensor] = None,
-    shear: Optional[Tensor] = None,
-    same_on_batch: bool = False,
-    device: Device = torch.device('cpu'),
-    dtype: torch.dtype = torch.float32,
-) -> Dict[str, Tensor]:
-    r"""Get parameters for ``affine`` for a random affine transform.
-
-    Args:
-        batch_size (int): the tensor batch size.
-        height (int) : height of the image.
-        width (int): width of the image.
-        degrees (Tensor): Range of degrees to select from like (min, max).
-        translate (tensor, optional): tuple of maximum absolute fraction for horizontal
-            and vertical translations. For example translate=(a, b), then horizontal shift
-            is randomly sampled in the range -img_width * a < dx < img_width * a and vertical shift is
-            randomly sampled in the range -img_height * b < dy < img_height * b. Will not translate by default.
-        scale (tensor, optional): scaling factor interval, e.g (a, b), then scale is
-            randomly sampled from the range a <= scale <= b. Will keep original scale by default.
-        shear (tensor, optional): Range of degrees to select from.
-            Shear is a 2x2 tensor, a x-axis shear in (shear[0][0], shear[0][1]) and y-axis shear in
-            (shear[1][0], shear[1][1]) will be applied. Will not apply shear by default.
-        same_on_batch (bool): apply the same transformation across the batch. Default: False.
-        device (Device): the device on which the random numbers will be generated. Default: cpu.
-        dtype (torch.dtype): the data type of the generated random numbers. Default: float32.
-
-    Returns:
-        params Dict[str, Tensor]: parameters to be passed for transformation.
-            - translations (Tensor): element-wise translations with a shape of (B, 2).
-            - center (Tensor): element-wise center with a shape of (B, 2).
-            - scale (Tensor): element-wise scales with a shape of (B, 2).
-            - angle (Tensor): element-wise rotation angles with a shape of (B,).
-            - sx (Tensor): element-wise x-axis shears with a shape of (B,).
-            - sy (Tensor): element-wise y-axis shears with a shape of (B,).
-
-    Note:
-        The generated random numbers are not reproducible across different devices and dtypes.
-    """
-    _common_param_check(batch_size, same_on_batch)
-    _joint_range_check(degrees, "degrees")
-    if not (isinstance(width, (int,)) and isinstance(height, (int,)) and width > 0 and height > 0):
-        raise AssertionError(f"`width` and `height` must be positive integers. Got {width}, {height}.")
-
-    _device, _dtype = _extract_device_dtype([degrees, translate, scale, shear])
-    degrees = degrees.to(device=device, dtype=dtype)
-    angle = _adapted_uniform((batch_size,), degrees[0], degrees[1], same_on_batch)
-    angle = angle.to(device=_device, dtype=_dtype)
-
-    # compute tensor ranges
-    if scale is not None:
-        scale = scale.to(device=device, dtype=dtype)
-        if not (len(scale.shape) == 1 and len(scale) in (2, 4)):
-            raise AssertionError(f"`scale` shall have 2 or 4 elements. Got {scale}.")
-        _joint_range_check(cast(Tensor, scale[:2]), "scale")
-        _scale = _adapted_uniform((batch_size,), scale[0], scale[1], same_on_batch).unsqueeze(1).repeat(1, 2)
-        if len(scale) == 4:
-            _joint_range_check(cast(Tensor, scale[2:]), "scale_y")
-            _scale[:, 1] = _adapted_uniform((batch_size,), scale[2], scale[3], same_on_batch)
-        _scale = _scale.to(device=_device, dtype=_dtype)
-    else:
-        _scale = torch.ones((batch_size, 2), device=_device, dtype=_dtype)
-
-    if translate is not None:
-        translate = translate.to(device=device, dtype=dtype)
-        if not (0.0 <= translate[0] <= 1.0 and 0.0 <= translate[1] <= 1.0 and translate.shape == torch.Size([2])):
-            raise AssertionError(f"Expect translate contains two elements and ranges are in [0, 1]. Got {translate}.")
-        max_dx: Tensor = translate[0] * width
-        max_dy: Tensor = translate[1] * height
-        translations = stack(
-            [
-                _adapted_uniform((batch_size,), -max_dx, max_dx, same_on_batch),
-                _adapted_uniform((batch_size,), -max_dy, max_dy, same_on_batch),
-            ],
-            dim=-1,
-        )
-        translations = translations.to(device=_device, dtype=_dtype)
-    else:
-        translations = zeros((batch_size, 2), device=_device, dtype=_dtype)
-
-    center: Tensor = tensor([width, height], device=_device, dtype=_dtype).view(1, 2) / 2.0 - 0.5
-    center = center.expand(batch_size, -1)
-
-    if shear is not None:
-        shear = shear.to(device=device, dtype=dtype)
-        _joint_range_check(cast(Tensor, shear)[0], "shear")
-        _joint_range_check(cast(Tensor, shear)[1], "shear")
-        sx = _adapted_uniform((batch_size,), shear[0][0], shear[0][1], same_on_batch)
-        sy = _adapted_uniform((batch_size,), shear[1][0], shear[1][1], same_on_batch)
-        sx = sx.to(device=_device, dtype=_dtype)
-        sy = sy.to(device=_device, dtype=_dtype)
-    else:
-        sx = sy = tensor([0] * batch_size, device=_device, dtype=_dtype)
-
-    return dict(translations=translations, center=center, scale=_scale, angle=angle, sx=sx, sy=sy)
+        return {
+            "translations": translations,
+            "center": center,
+            "scale": _scale,
+            "angle": angle,
+            "shear_x": sx,
+            "shear_y": sy,
+        }

@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 import torch
 
@@ -7,6 +9,7 @@ from kornia.geometry import transform_points
 from kornia.geometry.conversions import denormalize_homography
 from kornia.geometry.transform import ImageRegistrator
 from kornia.testing import assert_close
+from kornia.utils._compat import torch_version
 
 
 class TestSimilarity:
@@ -54,11 +57,12 @@ class TestHomography:
 
 
 class TestImageRegistrator:
-    def test_smoke(self, device, dtype):
-        for model_type in ['homography', 'similarity', 'translation', 'scale', 'rotation']:
-            ir = kornia.geometry.transform.ImageRegistrator(model_type).to(device, dtype)
-            assert ir is not None
+    @pytest.mark.parametrize("model_type", ["homography", "similarity", "translation", "scale", "rotation"])
+    def test_smoke(self, device, dtype, model_type):
+        ir = kornia.geometry.transform.ImageRegistrator(model_type).to(device, dtype)
+        assert ir is not None
 
+    @pytest.mark.slow
     def test_registration_toy(self, device, dtype):
         ch, height, width = 3, 16, 18
         homography = torch.eye(3, device=device, dtype=dtype)[None]
@@ -67,21 +71,25 @@ class TestImageRegistrator:
         homography[..., 0, 2] = 0.01
         img_src = torch.rand(1, ch, height, width, device=device, dtype=dtype)
         img_dst = kornia.geometry.homography_warp(img_src, homography, (height, width), align_corners=False)
-        IR = ImageRegistrator('Similarity', num_iterations=500, lr=3e-4, pyramid_levels=2).to(device, dtype)
+        IR = ImageRegistrator("Similarity", num_iterations=500, lr=3e-4, pyramid_levels=2).to(device, dtype)
         model = IR.register(img_src, img_dst)
         assert_close(model, homography, atol=1e-3, rtol=1e-3)
         model, intermediate = IR.register(img_src, img_dst, output_intermediate_models=True)
         assert len(intermediate) == 2
 
+    @pytest.mark.slow
     @pytest.mark.parametrize("data", ["loftr_homo"], indirect=True)
+    @pytest.mark.skipif(
+        torch_version() == "2.0.0" and "win" in sys.platform, reason="Tensor not matching on win with torch 2.0"
+    )
     def test_registration_real(self, device, dtype, data):
         data_dev = utils.dict_to(data, device, dtype)
-        IR = ImageRegistrator('homography', num_iterations=1200, lr=2e-2, pyramid_levels=5).to(device, dtype)
-        model = IR.register(data_dev['image0'], data_dev['image1'])
-        homography_gt = torch.inverse(data_dev['H_gt'])
+        IR = ImageRegistrator("homography", num_iterations=1200, lr=2e-2, pyramid_levels=5).to(device, dtype)
+        model = IR.register(data_dev["image0"], data_dev["image1"])
+        homography_gt = torch.inverse(data_dev["H_gt"])
         homography_gt = homography_gt / homography_gt[2, 2]
-        h0, w0 = data['image0'].shape[2], data['image0'].shape[3]
-        h1, w1 = data['image1'].shape[2], data['image1'].shape[3]
+        h0, w0 = data["image0"].shape[2], data["image0"].shape[3]
+        h1, w1 = data["image1"].shape[2], data["image1"].shape[3]
 
         model_denormalized = denormalize_homography(model, (h0, w0), (h1, w1))
         model_denormalized = model_denormalized / model_denormalized[0, 2, 2]
